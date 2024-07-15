@@ -33,10 +33,10 @@ It's main features include:
     \end{itemize}
 \end{itemize}
 
-\section{Motivation / Research Question}
+\section{Motivation and Goal of the Project and Research}
 
 Up until the end of 2023, GoCast was primarily used only by the department of informatics. The main reasons for is that the necessary \ac{SMP} to stream from auditoriums have a high cost of ~10.000 EUR which was unaffordable for most other faculties and departments.
-With the introduction of the \href{https://github.com/TUM-Dev/VMP/}{\ac{VMP}} with a price of ~500 EUR, this problem has been resolved, leading to many other TUM faculties and departments to show a increasing interest in starting to use TUM-Live for their lectures. However, TUM-Live is currently managed by the \href{https://www.cit.tum.de/ito/die-ito/}{\ac{ITO}} which operates a comprehensive basic IT infrastructure as well as complex IT services and specialized IT applications tailored to the research and teaching activities of the computer science and mathematics chairs as well as for various specialist groups, service offices and administrative departments of both faculties, meaning that they have only a very limited amount of (personal) resources for the maintenance and administration of TUM-Live. Hence, allowing other faculties to join the current TUM-Live would exceed the \ac{ITO}'s capacities, requiring a solution that would distribute the processing load, bandwidth and maintenance work to each faculty. 
+With the introduction of the \href{https://github.com/TUM-Dev/VMP/}{\ac{VMP}} with a price of ~500 EUR, this problem has been resolved, leading to many other TUM faculties and departments to show a increasing interest in starting to use TUM-Live for their lectures. However, TUM-Live is currently managed by the \href{https://www.cit.tum.de/ito/die-ito/}{\ac{ITO}} which operates a comprehensive basic IT infrastructure as well as complex IT services and specialized IT applications tailored to the research and teaching activities of the computer science and mathematics chairs as well as for various specialist groups, service offices and administrative departments of both faculties, meaning that they have only a very limited amount of (personal) resources for the maintenance and administration of TUM-Live. Hence, allowing other faculties to join the current TUM-Live would exceed the \ac{ITO}'s capacities, requiring a solution that would distribute the processing load, bandwidth and maintenance work to each faculty all while keeping it as user oriented and easy to set up as possible.
 
 \subsection{Current System Architecture}
 
@@ -76,7 +76,18 @@ Since its creation in February of 2021, GoCast has been used to stream thousands
 
 \section{Process, preparation, methods and environments}
 
-\section{Goal of the Project and Research}
+The thesis spanned 5 months, from 15.05.2024 to \getSubmissionDate{}. The first weeks were spent familiarizing with the current system considering different approaches to scale its architecture and finding potential bottlenecks or issues. Following the initial analysis of the system, before being able to try scaling individual components, the original user and role system first needed to be updated together with new database models. After that, the most important components were gradually updated to be usable and manageable by each faculty. 
+To develop and test the prototype of a distributed architecture for TUM-Live for this thesis, the following resources were used:
+\begin{itemize}
+    \item 3 \ac{VM}s with: 2 GB RAM, Intel(R) Xeon(R) CPU E5-2697A v4 @ 2.60GHz
+    \item 1 \ac{VM} with: 20 GB RAM, AMD EPYC 7452 32-Core Processor
+    \item 1 \ac{AWS} \ac{EKS} Cluster
+    \item 1 selfhosted \ac{VM} with 32 GB RAM, AMD Ryzen 7 PRO 6850U @ 2.70GHz
+\end{itemize}
+
+After the target architecture had been deployed (on a smaller scale) using given resources, a set of performance tests and comparisons was made to find potential limits and breakpoints of each component. 
+Additionally, in parallel to the development of the new architecture, a dedicated documentation has been created to facilitate the set up of GoCast for lecturers or new faculties which can be found at \href{https://tumlive-docs.pages.dev/}{tumlive-docs.pages.dev}. The documentation was created using Meta Opensource's Docusaurus. Static pages were deployed using Cloudflare.
+All relevant source code for the thesis, new architecture, other mentioned prototypes and documentation can also be found at \href{https://github.com/carlobortolan/thesis}{github.com/carlobortolan/thesis}.
 
 \section{Implementation Outline}
 
