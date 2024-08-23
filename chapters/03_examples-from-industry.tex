@@ -1,0 +1,98 @@
+% !TeX root = ../main.tex
+\chapter{Examples from Industry}\label{chapter:examples}
+
+\section{History}
+The video streaming industry has evolved dramatically over the past two decades, transitioning from old fashioned technologies to highly complex, scalable infrastructures capable of delivering large amounts of content to millions of users simultaneously. The origins of video streaming can be traced back to the late 1990s and early 2000s, with the advent of streaming technologies like RealNetworks' RealPlayer and Apple's QuickTime. These early platforms allowed users to stream audio and video content, although at low quality and with significant buffering issues due to limited bandwidth and server capacities.
+Around 2002, the interest in a single, unified, streaming format and the widespread adoption of Adobe Flash prompted the development of a video streaming format through Flash, which was the format used in Flash-based players on video hosting sites.
+The real breakthrough in video streaming came in 2005 with the launch of YouTube, which introduced a user-friendly platform for uploading, sharing, and streaming videos online. YouTube's success not only showed the willingness of users to consume hourse of uploaded video content via the internet, but also the potential for scalable video streaming infrastructure, leading to an increase in demand for online video content. Concurrently, Netflix's pivot from a mail-based DVD rental business to streaming in 2007 set another milestone in the industry. 
+
+Later in 2012, Netflix announced that would be using a new \ac{CDN} of its own, called Open Connect, which reduced its costs of delivery and improved delivery of its content. But Open Connect wasn’t just about reducing its reliance on third-party \ac{CDN}s like Akamai, Limelight, and Level 3, but an effort to connect directly with \ac{ISP} \cite{netflix_history}.
+For larger \ac{ISP} with over 100,000 subscribers, Netflix offered free Netflix Open Connect computer appliances that cache their content within the \ac{ISP}'s data centers or networks to further reduce transit costs. 
+
+As internet speeds increased and cloud computing became more prevalent, the scalability of video streaming services improved. By August 2016, Netflix closed its last physical data center, but continued to develop its Open Connect technology.
+Additionally, the introduction of adaptive bitrate streaming allowed platforms to dynamically adjust video quality based on the user's internet connection, reducing buffering and improving the overall viewing experience\cite{ABR}. Meanwhile, \ac{CDN}s became a critical component of streaming infrastructure, enabling the efficient distribution of video content by caching it closer to users, thereby reducing latency and server load\cite{CDN}.
+
+\section{Statistics}
+As of 2024, video streaming accounts for over 82\% of all internet traffic, driven by the always increasing popularity of platforms like YouTube, Netflix, and Twitch\cite{cisco_vni}. The global video streaming market, valued at approximately \$90 billion in 2023, is projected to grow to over \$150 billion by 2028\cite{grandview_research}. This growth is fueled by the demand for high-quality video content, including 4K and 8K resolutions, and the increasing availability of high-speed internet access worldwide.
+
+YouTube, the largest video-sharing platform, reported over 2 billion logged-in monthly users who watch over 1 billion hours of video daily\cite{youtube_stats}. The platform's user base generates immense amounts of data, requiring a highly scalable and efficient infrastructure to manage content delivery and storage. Twitch, the leading platform for live streaming, particularly in the gaming sector, currently has over 140 million unique monthly viewers. At any given time, there are approximately 2.5 million concurrent viewers on Twitch \cite{twitch_stats}.
+
+Also, the shift towards mobile video consumption is another significant trend, with over 60\% of video streams now being viewed on mobile devices\cite{mobile_video}. This trend has required further optimization of streaming infrastructure to account for the variability in mobile network conditions and the need for efficient data usage.
+
+\section{Example: Twitch}
+Twitch, which launched in 2011 as a spin-off from the general-interest streaming platform Justin.tv, has become synonymous with live streaming, particularly within the gaming community. Its popularity can be explained by its ability to deliver high-quality, low-latency streams to millions of users simultaneously. 
+One of the most significant challenges Twitch faces is the need to manage vast amounts of user-generated content in real-time and scale with high fluctuations in viewer numbers, particularly during major events like e-sports competitions\cite{twitch_aws}.
+Twitch's architecture is a highly complex and needs to support millions of concurrent video streams, real-time interactions through chat, and extensive data processing. In the following, there is a detailed breakdown of the key components of its architecture:
+
+\begin{enumerate}
+    \item \textbf{Video System}
+    
+    The video system is the core of Twitch’s platform, responsible for delivering live and on-demand video content to viewers around the world. Similarly to TUMLive, this system begins with the \textbf{video ingest} process, where live video streams are received from broadcasters. Twitch primarily uses the \ac{RTMP} for this purpose, which provides a reliable method for streaming video to their servers. Once the video stream is ingested, it is transported to the \textbf{transcode system}. This system, implemented in a combination of C/C++ and Go, transcodes the incoming \ac{RTMP} stream into multiple \ac{HLS} streams. These \ac{HLS} streams are essential for adaptive bitrate streaming, which dynamically adjusts the video quality based on the viewer’s bandwidth and device capabilities, ensuring a smooth viewing experience under varying network conditions.
+    
+    After transcoding, the streams are distributed through the \textbf{Distribution and Edge} network - again note the similarities with TUMLive. Twitch has established \ac{POPs} across the globe to facilitate this process. The \ac{POPs} cache the \ac{HLS} streams and deliver them to users from geographically optimal locations, minimizing latency and buffering. The distribution system, also largely written in Go, is designed to scale massively, ensuring high availability and performance even during peak usage times. Additionally, Twitch archives all live streams through its \textbf{\ac{VOD}} system. This component stores the video content, making it available for later viewing, either immediately after the live broadcast or as part of a long-term archive.
+    
+    \item \textbf{Chat}
+
+    The chat system is a real-time distributed system, primarily written in Go, and designed to handle real-time interaction between viewers and streamers. The \textbf{Edge} component of the chat system is responsible for receiving and distributing messages between clients and backend services. It supports the \ac{IRC} protocol over both raw TCP and WebSockets, which allows for broad compatibility, including the integration of third-party \ac{IRC} bots.
+    
+    Next, the \textbf{Pubsub} subsystem is used for the internal distribution of chat messages across various edge nodes. Together, they create a hierarchical message distribution system capable of executing massive fanout, ensuring that all participants in a chat room receive messages promptly and reliably. The \textbf{Clue} component handles the application of business logic to chat interactions. For instance, it checks if a user is banned from a channel, whether they are a subscriber, or if they are exhibiting abusive behavior. Clue achieves this by aggregating data from various sources, including databases, internal \ac{API}s, and caches, to make real-time decisions. Finally, the \textbf{Room} component manages the viewer list for each chat room. It aggregates, stores, and queries membership data across all Edge nodes to provide accurate and up-to-date viewer lists, which are crucial for both moderation and user interaction.
+
+    \item \textbf{Web \ac{API}s and Data}
+
+    Twitch’s platform also includes a set of web \ac{API}s and data services that enable various functionalities, from user profile management to stream discovery. These \textbf{Web \ac{API}s} are built using a combination of Ruby on Rails, Go, and other open-source technologies, designed to handle high request volumes, with Twitch's services processing over 50,000 \ac{API} requests per second on average. These \ac{API}s allow users to manage their profiles, customize subscriptions, and interact with other services on the platform.
+
+    Additionally, Twitch also has various micro services for specific use cases such as \textbf{Search and Discovery Services} to help users find streams and content that match their interests or \textbf{Revenue Systems} that manage all aspects of advertising and subscriptions, ensuring that revenue is accurately tracked and distributed to partners. 
+    
+    \item \textbf{Web and Client Applications}
+
+    The user-facing aspect of Twitch is delivered through a range of web and client applications, ensuring a consistent and  accessible experience across multiple platforms. Twitch’s \textbf{Desktop Web Application} began as a vanilla Rails application but has evolved into a more complex Ember.js application.
+
+    For mobile users, Twitch offers \textbf{Native Apps} on iOS and Android platforms. These applications are designed to provide a seamless experience on mobile devices, with interfaces tailored to smaller screens and touch interactions. The development of these apps ensures that users can watch streams, chat, and interact with the platform while on the go. In addition to mobile platforms, Twitch has developed \textbf{Console Applications} for major gaming systems, including Xbox One, Xbox 360, and PlayStation 4. These apps allow users to access Twitch directly from their gaming consoles, integrating streaming with their gaming experience.
+
+    \item \textbf{Data Science Infrastructure}
+
+    Next to its operating infrastructure, Twitch’s data science infrastructure plays an important role in optimizing the platform, improving user experiences, and driving business decisions. At the core of this infrastructure is the \textbf{Data Pipeline}, which is responsible for collecting, cleaning, and loading over a billion events per day into Twitch’s data warehouse. 
+
+    The platform also uses so called \textbf{Streaming Aggregators}, which summarize key metrics in near real-time. These aggregators provide broadcasters with immediate feedback on their stream performance, allowing them to make adjustments on the fly to improve viewer engagement. To support more in-depth analysis, Twitch has developed a range of undisclosed \textbf{Analysis Tools}.
+
+    \item \textbf{Tools and Operational Infrastructure}
+
+    The operation of Twitch’s platform relies heavily on a complex set of tools and infrastructure, designed to ensure reliability, scalability, and efficiency. \ac{QA} is a critical aspect of this, with Twitch utilizing both \textbf{Automated Testing Frameworks} such as Jenkins to allow for continuous integration and testing to maintain high code quality across all services.
+
+    \textbf{Deployment and Rollback Tools} are essential for managing the frequent updates required by a platform of Twitch’s size. Twitch has developed several custom tools that allow for rapid deployment of new features and quick rollback if issues arise, minimizing downtime and maintaining service reliability. To keep the platform running smoothly, Twitch employs a suite of \textbf{Monitoring and Alerting Systems}, including Ganglia, Graphite, and Nagios. These systems monitor the health and performance of the infrastructure, providing real-time alerts and insights that help engineers quickly identify and prevent potential problems that could lead to outages.
+
+    As Twitch transitions further into distributed systems and microservices, they have also been working on \textbf{Distributed Trace} tools. These tools are designed to provide a comprehensive view of the interactions between services, making it easier to debug and optimize complex systems. Finally, Twitch’s \textbf{Network Infrastructure} is built to support the high bandwidth requirements of video delivery. They operate a significant number of bare-metal \ac{POPs} worldwide. Additionally, an increasing number of services are being migrated to \ac{AWS}, which helps reduce operational overhead while benefiting from the on demand scalability and flexibility of cloud services.
+
+\end{enumerate}
+
+\section{Example: YouTube}
+YouTube, launched in 2005, is the world's largest video-sharing platform, hosting an extensive library of user-generated and professional content. The platform's ability to handle billions of video views daily and manage the upload of over 500 hours of video content every minute is a testament to its highly scalable and optimized infrastructure\cite{youtube_infrastructure}.
+
+YouTube's infrastructure is built on Google's global network of data centers and CDNs, which are key to its ability to deliver content efficiently to users worldwide. By strategically placing data centers and CDN nodes around the globe, YouTube can minimize latency and ensure fast load times, regardless of the user's location\cite{google_cloud}. The platform uses advanced video compression algorithms, such as VP9 and AV1, to optimize bandwidth usage while maintaining high video quality, even at lower bitrates\cite{youtube_compression}.
+
+One of YouTube's key technological innovations is its use of machine learning to predict user behavior and optimize content delivery. For example, YouTube pre-loads videos based on the user's watch history and preferences, reducing latency and buffering times when the user selects a video to watch\cite{youtube_ml}. This predictive approach allows YouTube to deliver a seamless viewing experience, even during periods of high demand.
+
+In recent years, YouTube has also expanded its offering to include live streaming and 360-degree videos, pushing the boundaries of scalable video delivery. These formats require additional optimizations, such as increased bandwidth for live streams and specialized encoding for 360-degree videos, which YouTube has successfully implemented across its infrastructure\cite{youtube_live}.
+
+Furthermore, YouTube's investment in AI-driven content moderation and recommendation systems has become increasingly important as the platform continues to grow. These systems are crucial for managing YouTube's vast and diverse content library while ensuring compliance with global regulations and maintaining user satisfaction\cite{youtube_ai}.
+
+% \begin{thebibliography}{99}
+% \bibitem{netflix_history} "The Evolution of Netflix: From DVD Rentals to Streaming Giant," \textit{Wired}, 2020.
+% \bibitem{ABR} Zambelli, A. "Adaptive Bitrate Streaming – Understanding the Fundamentals," \textit{Microsoft Developer Network}, 2019.
+% \bibitem{CDN} Nygren, E., Sitaraman, R., & Sun, J. "The Akamai Network: A Platform for High-Performance Internet Applications," \textit{ACM SIGOPS Operating Systems Review}, 2010.
+% \bibitem{cisco_vni} "Cisco Visual Networking Index: Forecast and Trends, 2018–2023," \textit{Cisco Systems}, 2020.
+% \bibitem{grandview_research} "Video Streaming Market Size, Share & Trends Analysis Report By Streaming Type, By Solution, By Platform, By Service, By Revenue Model, By Deployment Type, By User, By Region, And Segment Forecasts, 2023 - 2030," \textit{Grand View Research}, 2023.
+% \bibitem{youtube_stats} "YouTube for Press," \textit{YouTube Official Press Page}, 2023.
+% \bibitem{twitch_stats} "Twitch 2023 Facts and Stats," \textit{TwitchTracker}, 2023.
+% \bibitem{mobile_video} "Mobile Video 2024: Trends, Consumption, and Future Outlook," \textit{Ericsson Mobility Report}, 2024.
+% \bibitem{twitch_tech} "How Twitch Uses Technology to Scale Live Video Streaming," \textit{Twitch Engineering Blog}, 2022.
+% \bibitem{twitch_ABR} Lee, S. "The Role of Adaptive Bitrate Streaming in Twitch’s Growth," \textit{IEEE Communications Magazine}, 2021.
+% \bibitem{twitch_aws} "How Twitch Leverages AWS for Scalability," \textit{Amazon Web Services Case Study}, 2023.
+% \bibitem{twitch_monetization} "Monetization Strategies on Twitch: The Infrastructure Behind the Features," \textit{Twitch Blog}, 2023.
+% \bibitem{youtube_infrastructure} "Inside YouTube's Infrastructure: Scaling to Billions," \textit{Google Cloud Blog}, 2021.
+% \bibitem{google_cloud} "Google Cloud Networking: Delivering High-Quality Video at Scale," \textit{Google Cloud Whitepapers}, 2022.
+% \bibitem{youtube_compression} "Video Compression Techniques Used by YouTube," \textit{YouTube Engineering and Developers Blog}, 2023.
+% \bibitem{youtube_ml} "How YouTube Uses Machine Learning to Enhance User Experience," \textit{Google AI Blog}, 2023.
+% \bibitem{youtube_live} "Scaling Live Streams and 360-Degree Videos on YouTube," \textit{YouTube Creator Blog}, 2022.
+% \bibitem{youtube_ai} "AI-Driven Content Moderation on YouTube: Challenges and Innovations," \textit{Google Research}, 2024.
+% \end{thebibliography}
