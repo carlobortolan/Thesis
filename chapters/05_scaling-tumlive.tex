@@ -45,7 +45,7 @@ Each school can then decide how many resources it wants to allocate to each serv
 \newpage
 
 
-\section{Role Based Access Control}
+\section{Role Based Access Control}\label{section:rbac}
 
 Given the proposed system design, this section documents how this system has been implemented and what the current limitations and potential improvements of the main user system are. 
 
@@ -88,20 +88,96 @@ The subordinated "Chair of Financial Management and Capital Markets" (FA), howev
 
 \section{Distributed Resources}
 
-Now that the user role system had been updated, the next step was to find a solution to have the different resources such as Workers and Runners be able to be connected by a school to the main cluster of Workers and Runners indepentently of the others, but at the same time be able to process and distribute requests between each other regardless of the school they are in. This section explains in detail how each subsystem works as part of the distributed GoCast system. 
+Now that the user role system had been updated, the next step was to find a solution to have the different resources such as Workers and Runners be able to be connected by a school to the main cluster of Workers and Runners independently of the others, but at the same time be able to process and distribute requests between each other regardless of the school they are in. This section explains in detail how each subsystem works as part of the distributed GoCast system. 
 
 \subsection{Workers and Runners}
-TODO: How they are scaled, owned and registered by a school. Data flow. 
+To set up a distributed network of Workers and Runners, the first step was to update the way that Workers and Runners can be connected to the main network of GoCast. To do this, a school maintainer can create a new school-token, a \ac{JWT} that expires after seven hours and allows its owner to connect new resources for the school (see Fig. \ref{fig:school-token}).
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=390pt]{images/SchoolToken.png}
+    \caption[Example School Token]{Example School Token}\label{fig:school-token}
+\end{figure}
+
+When a maintainer starts a new Worker or Runner, he can include this token in the containers environment (e.g., via a \texttt{docker-compose.yml} file or by passing it as an argument directly to Docker using \texttt{-e Token=<...>}). When starting up, the Worker or Runner sends a requests to join the Worker or Runner pool of GoCast using the school-token and additional data (e.g., host name, IP or FQDN address, VM workload, etc.) and - if successful - receives a token without expiration which is then used to identify all subsequent requests from and to the Worker or Runner.  
+
+Maintainers can see and manage the current status of their registered resources in the Resource-Dashboard of GoCast (see Fig. \ref{fig:resource-dashboard}).
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=390pt]{images/ResourceDashboard.png}
+    \caption[Resources Dashboard]{Resources Dashboard}\label{fig:resource-dashboard}
+\end{figure}
+
+Now, whenever a new lecture is being recorded or uploaded, the main GoCast \ac{API} selects an available worker for this school and addresses it given the host name and IP address that the worker has registered when first connecting to GoCast. For more details on how the distribution of tasks works, see Section \ref{section:shared-resources}.
+
+When the Worker or Runner receives such a request, it initiates the video transcoding process using FFmpeg. The transcoding is performed based on the specific stream version (e.g., \texttt{CAM}, \texttt{PRES} or \texttt{COMB}), adjusting parameters like compression level and priority (niceness) accordingly. The process is monitored in real-time, with progress being reported back to the GoCast system, ensuring that any issues are retried with backoff strategies and that the final transcoded video meets the expected duration and quality standards.
 
 \subsection{VOD Service and Edge Server}
-TODO: Each school needs to have a vod service and edge server to store own data -> depends on worker
 
-\subsection{Ingest Servers}
-TODO: How they are registered and distributed by the RTMP-Proxy
+Once the Worker or Runner has completed the transcoding process, the VOD Service starts detecting silent sections in the recordings so that the user will be able to skip these and get directly to the start of the actual lecture. Then, it packages them to a \ac{HLS} stream and pushes the packed stream to the school's recording storage.
+
+To ensure easy access to these recordings, each school also needs to have its own Edge Server set up. The VOD Service at each school is responsible for managing the processing, packaging, and storage of the recordings locally, while the Edge Server is responsible for distributing the streams. This also has the advantage that each school maintains control over its data, and reduces latency by storing the recordings closer to the end-users (assuming that a user is more likely to be closer to his school than to others).
+Additionally, the Edge Server acts as a local cache for the school's content. When students or faculty access recordings, the Edge Server destributes the content directly from the local storage, reducing the load on the central servers.
+
+The dependency on Workers or Runners for transcoding means that the efficiency and speed of the VOD Service and Edge Server setup depend on the availability and performance of these services. Therefore, it is necessary that a school has enough Workers or Runners to support the number of recorded lectures.
+If a school has many concurrent viewers, it might need to consider having multiple Edge Servers running, as they have a limited bandwidth and can only serve approximately . When network traffic to worker nodes exceeds the available bandwidth, the architecture might look like the example shown in Fig.\ref{fig:edge-network}.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=\linewidth]{images/EdgeNetwork.png}
+    \caption[Edge Server as proxy and cache node]{Edge Server as proxy and cache node}\label{fig:edge-network}
+\end{figure}
+
+% \subsection{Ingest Servers}
+% TODO: How they are registered and distributed by the RTMP-Proxy
 % \subsection{Voice Service}
 
 \subsection{RTMP-Proxy}
-TODO: Why there is the need of a proxy, example implementation with limitations and potentials.
 
-\section{Shared Resources}
+GoCast supports not just recordings from the lecture hall or manual uploads, but also so called self-streams. The idea behind self-streams is, that any lecturer can go live at any given time and stream from his own device without having to be in the lecture hall. In past, to do this, a lecturer had to go open GoCast, go to one his courses' page, select a lecture, and copy a link (such as: \texttt{rtmp://worker.example.com:1935/cs-123? secret=5caa9d6447564cb5822995888e224f9a}) together with a secret stream key into a streaming software like OBS Studio. With the introduction of the school system there are several reasons why this can't work:
+
+\begin{enumerate}
+    \item The URL might change depending on the availability of workers and schools.
+    \item Having to copy and paste a new URL every time a lecturer wants to start a stream can become annoying.
+    \item For lecturers who teach at multiple schools (e.g., the Chair of Databases and the Chair of Bioinformatics), managing different URLs for each school would be inconvenient.
+\end{enumerate}
+
+The solution for this is the RTMP-Proxy microservice. In a nutshell, the RTMP-Proxy acts as a router-like service that accepts all \ac{RTMP} self-stream requests and redirects them accordingly. With this, all a lecturer has to is creating a new personal Token (see Fig.\ref{fig:personal-token}) and copy the token together with the target URL of the RTPM-Proxy into a streaming software only once.
+
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=\textwidth]{images/PersonalToken.png}
+    \caption[Creation of Personal Token and RTMP-Proxy URL]{Creation of Personal Token and RTMP-Proxy URL}\label{fig:personal-token}
+\end{figure}
+
+After this initial setup, the lecturer can go live whenever they want by simply using the pre-configured URL and token.
+
+The internal process of the RTMP-Proxy is as follows: 
+
+\begin{enumerate}
+    \item An incoming \ac{RTMP} request is received: 
+    \texttt{rtmp://rtmp-proxy.example.com:1935/ <user-id>?token=<personal-token>}.
+    \item The RTMP-Proxy sends a self-stream request to the main GoCast \ac{API} with the provided \texttt{user-id} and \texttt{personal-token}.
+    \item The GoCast \ac{API} returns the details of the school from which the user is streaming, including the \ac{RTMP} URL of the ingest worker currently available for that school.
+    \item The RTMP-Proxy redirects the \ac{RTMP} request to the retrieved \ac{RTMP} URL.
+    \item The school's ingest worker detects whether the lecturer has a scheduled lecture for the current time slot or an upcoming lecture and automatically starts the live-stream for viewers.
+\end{enumerate}
+
+While the RTMP-Proxy is far from perfect, it is meant as a prototype of a possible solution to stream via \ac{RTMP} in a distributed network where the final target address of the stream request is unknown when making the request. As the RTMP-Proxy is independent of other services in the GoCast environment (besides the main \ac{API}), it can be scaled very easily by deploying multiple RTMP-Proxies and having for example a Round-robin DNS distribute the load accordingly.
+
+\section{Shared Resources}\label{section:shared-resources}
+
+This section is meant to explain in detail different approaches for the allocation of resources in the GoCast network. The main focus is on the task distribution to Workers and Runners when receiving new video upload requests.
+
+To understand the three approaches presented, it is important to explain in detail how a school actually "owns" a certain resource such as a Worker. As described in Section\ref{section:rbac}, schools are 
+
+3 approaches:
+
+1. Plain
+
+2. Recursive + schools
+
+3. Min/Max problem
+
 TODO: How the distribution of tasks works. (+ operations research)
