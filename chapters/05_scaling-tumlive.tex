@@ -2,11 +2,11 @@
 % !TeX root = ../main.tex
 % Add the above to each chapter to make compiling the PDF easier in some editors.
 
-\chapter{Scaling TUMLive}\label{chapter:introduction}
+\chapter{Scaling TUMLive}\label{chapter:scaling_tumlive}
 
 This chapter focuses on applying the concepts discussed in the previous sections to the architecture of TUMLive, discussing the development approach, results and challenges along the way. 
 
-\section{Process, preparation, methods and environments}
+\section{Process, Preparation, Methods and Environments}
 
 The thesis spanned 5 months, from 15.05.2024 to \getSubmissionDate{}. The first weeks were spent familiarizing with the current system considering different approaches to scale its architecture and finding potential bottlenecks or issues. Following the initial analysis of the system, before being able to try scaling individual components, the original user and role system first needed to be updated together with new database models. After that, the most important components were gradually updated to be usable and manageable by each faculty. 
 To develop and test the prototype of a distributed architecture for TUM-Live for this thesis, the following resources were used:
@@ -38,65 +38,70 @@ Each school can then decide how many resources it wants to allocate to each serv
 
 \begin{figure}[htpb]
     \centering
-    \includegraphics[width=\textwidth]{images/DeploymentDiagram.png}
+    \includegraphics[width=390pt]{images/NewDeploymentDiagram.png}
     \caption[Target System Architecture]{Target Deployment Diagram of TUM-Live}\label{fig:system-architecture}
 \end{figure}
 
 \newpage
 
 
-\section{Implementation Outline}
+\section{Role Based Access Control}
+
+Given the proposed system design, this section documents how this system has been implemented and what the current limitations and potential improvements of the main user system are. 
 
 \subsection{Updating Architecture and Core API}
 
-\subsection{Scaling Workers and Runners}
-
-\subsection{Scaling Proxies and Other Services}
-
-\subsection{Optimizing selected services}
-
-\section{Introduction of Schools}
-
 Initially, GoCast was used primarily by the former faculty of Informatics at TUM. However, with increasing demand, GoCast needs to be extended for university-wide lecture streaming. The solution to this are schools (not to be confused with TUMOnline's 'TUM School').
 
-To start using GoCast for your department/school, you only need to deploy the TUM-Live Worker, VoD Service and TUM-Live Edge yourself. All other services are already provided by the GoCast network.
-
-The idea is the following: To avoid one entity having to manage and process all streaming data for the entire university (or multiple universities), GoCast is distributed to multiple entities. Each entity (aka GoCast 'school') has so-called maintainers (users with the maintainer user role) that are allowed to manage the school's resources such as Workers/Runners, VoD Services, etc.
-
+The first step of implementing this structure was updating GoCast's role system. Previously, it contained four roles: admin, lecturer, student, visitor. While users with the admin role can manage over the entire system (e.g., create and delete lectures and users, as well as perform maintanance tasks), lecturers can only manage their own lectures and students only manage their own profile and preferences. Howver, with the introduction of schools, this is not sufficient, as the each school needs to have own school-scoped admins that can manage over their schools' resources without being able to interfere with other schools. To do this, a new 'maintainer'-role has been introduced (see below graph).
+With this, a school using GoCast is managed by a set of maintainers of this school. A user with the maintainer role can be maintainer of multiple schools, and has also maintainer rights for all sub-schools of his schools.  
 Maintainers also have some basic administrative functionality which is limited to their schools' scope (e.g., create, update and delete courses and streams only for those schools which are administered by that maintainer). For an overview of your administered schools, go to the "schools"-tab in the admin dashboard.
 info
 
-One maintainer can maintain multiple schools.
-The following school-related actions are allowed by a maintainer of a school:
-
-    Create, update or delete school
-
-    Create new tokens for that school (required to add new resources)
-
-    Manage school's resources
-
-    Manage school's maintainers
-
-TUMOnline School vs. GoCast School
+\subsection{TUMOnline School vs. GoCast School}
 
 TUMOnline has a strict hierarchical structure for its organizations (one school has multiple departments; one department has multiple chairs; one chair has multiple courses ...).
-note
+%
+% On a side node, TUMOnline has 7 schools, 29 departments and 487 chairs.
+While GoCast is mainly used by the TUM, in principle it doesn't need to differentiate between organizational types that strictly. Organizations are only relevant when it comes to distributing the livestreams and recordings of a certain entity to that entity's resources (e.g., Workers/Runners and VOD Services). Hence, the introduction of GoCast's "schools" which represent an entity responsible for processing data. In practice, this is most of the time a TUMOnline school, however, one can also create a GoCast "school" for a department, chair or smaller organization which is subordinated to another organization, depending on the specific situation.
 
-On a side node, TUMOnline has 7 schools, 29 departments and 487 chairs.
-
-While GoCast is mainly used by the TUM, in principle it doesn't need to differentiate between organizational types that strictly. Organizations are only relevant when it comes to distributing the livestreams and recordings of a certain entity to that entity's resources (e.g., Workers/Runners and VoD Services). Hence, the introduction of GoCast's "schools" which represent an entity responsible for processing data. In practice, this is most of the time a TUMOnline school, however, in theory one could also create a GoCast "school" for a department, chair or smaller organization, depending on the specific situation.
 Here's an example to illustrate this in a more detailled way:
+The TUMOnline "School of Management" (SOM) wants to start using GoCast. Hence, the SOM's IT team contacts the admins of GoCast who then create a new GoCast "school" of type TUM School and assign the SOM IT team as maintainers.
+The subordinated "Chair of Financial Management and Capital Markets" (FA), however, has its own data center and wants to host its lectures with its own resources. In this case, either one of the SOM maintainers or the RBG can create a new GoCast "school" as a child of the SOM school and accordingly assign new maintainers from the FA-team. Now, the FA-team have full control over their sub-school and can connect their own resources from their data center with GoCast, independently of the SOM.
 
-    The TUMOnline "School of Management" (SOM) wants to start using GoCast. Hence, the SOM's IT team contacts the admins of GoCast who then create a new GoCast "school" of type TUM School and assign the SOM IT team as maintainers.
+% The idea is the following: To avoid one entity having to manage and process all streaming data for the entire university (or multiple universities), GoCast is distributed to multiple entities. Each entity (aka GoCast 'school') has so-called maintainers (users with the maintainer user role) that are allowed to manage the school's resources such as Workers/Runners, VoD Services, etc.
 
-    The subordinated "Chair of Financial Management and Capital Markets" (FA), however, has its own data center and wants to host its lectures with its own resources. In this case, either one of the SOM maintainers or the RBG can create a new GoCast "school" of type Lehrstuhl and accordingly assign new maintainers from the FA-team. Now, the FA-team can connect their own resources from their data center with GoCast, independently of the SOM.
+
+% One maintainer can maintain multiple schools.
+% The following school-related actions are allowed by a maintainer of a school:
+
+%     Create, update or delete school
+
+%     Create new tokens for that school (required to add new resources)
+
+%     Manage school's resources
+
+%     Manage school's maintainers
+
+
+
 
 \section{Distributed Resources}
 
-\subsection{Workers}
-\subsection{Runners}
+Now that the user role system had been updated, the next step was to find a solution to have the different resources such as Workers and Runners be able to be connected by a school to the main cluster of Workers and Runners indepentently of the others, but at the same time be able to process and distribute requests between each other regardless of the school they are in. This section explains in detail how each subsystem works as part of the distributed GoCast system. 
+
+\subsection{Workers and Runners}
+TODO: How they are scaled, owned and registered by a school. Data flow. 
+
+\subsection{VOD Service and Edge Server}
+TODO: Each school needs to have a vod service and edge server to store own data -> depends on worker
+
 \subsection{Ingest Servers}
-\subsection{Voice Service}
+TODO: How they are registered and distributed by the RTMP-Proxy
+% \subsection{Voice Service}
+
+\subsection{RTMP-Proxy}
+TODO: Why there is the need of a proxy, example implementation with limitations and potentials.
 
 \section{Shared Resources}
-
+TODO: How the distribution of tasks works. (+ operations research)

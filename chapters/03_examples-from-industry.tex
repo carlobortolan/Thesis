@@ -43,10 +43,8 @@ Twitch's architecture is a highly complex and needs to support millions of concu
     Additionally, Twitch also has various micro services for specific use cases such as \textbf{Search and Discovery Services} to help users find streams and content that match their interests or \textbf{Revenue Systems} that manage all aspects of advertising and subscriptions, ensuring that revenue is accurately tracked and distributed to partners. 
     
     \item \textbf{Web and Client Applications}
-
-    The user-facing aspect of Twitch is delivered through a range of web and client applications, ensuring a consistent and  accessible experience across multiple platforms. Twitch’s \textbf{Desktop Web Application} began as a vanilla Rails application but has evolved into a more complex Ember.js application.
-
-    For mobile users, Twitch offers \textbf{Native Apps} on iOS and Android platforms. These applications are designed to provide a seamless experience on mobile devices, with interfaces tailored to smaller screens and touch interactions. The development of these apps ensures that users can watch streams, chat, and interact with the platform while on the go. In addition to mobile platforms, Twitch has developed \textbf{Console Applications} for major gaming systems, including Xbox One, Xbox 360, and PlayStation 4. These apps allow users to access Twitch directly from their gaming consoles, integrating streaming with their gaming experience.
+    
+    Twitch’s \textbf{Desktop Web Application} began as a vanilla Rails application but has developed into a Ember.js application. For mobile users, Twitch offers \textbf{Native Apps} on iOS and Android platforms as well as \textbf{Console Applications} for major gaming systems, including Xbox One, Xbox 360, and PlayStation 4.
 
     \item \textbf{Data Science Infrastructure}
 
@@ -56,11 +54,11 @@ Twitch's architecture is a highly complex and needs to support millions of concu
 
     \item \textbf{Tools and Operational Infrastructure}
 
-    The operation of Twitch’s platform relies heavily on a complex set of tools and infrastructure, designed to ensure reliability, scalability, and efficiency. \ac{QA} is a critical aspect of this, with Twitch utilizing both \textbf{Automated Testing Frameworks} such as Jenkins to allow for continuous integration and testing to maintain high code quality across all services.
+    \ac{QA} is a critical, with Twitch utilizing both \textbf{Automated Testing Frameworks} such as Jenkins to allow for continuous integration and testing to maintain high code quality across all services.
 
-    \textbf{Deployment and Rollback Tools} are essential for managing the frequent updates required by a platform of Twitch’s size. Twitch has developed several custom tools that allow for rapid deployment of new features and quick rollback if issues arise, minimizing downtime and maintaining service reliability. To keep the platform running smoothly, Twitch employs a suite of \textbf{Monitoring and Alerting Systems}, including Ganglia, Graphite, and Nagios. These systems monitor the health and performance of the infrastructure, providing real-time alerts and insights that help engineers quickly identify and prevent potential problems that could lead to outages.
+    In addition to that, there are also several \textbf{Deployment and Rollback Tools}, as well as \textbf{Monitoring and Alerting Systems}, including Ganglia, Graphite, and Nagios that monitor the health and performance of the infrastructure, providing real-time alerts and insights that help engineers quickly identify and prevent problems.
 
-    As Twitch transitions further into distributed systems and microservices, they have also been working on \textbf{Distributed Trace} tools. These tools are designed to provide a comprehensive view of the interactions between services, making it easier to debug and optimize complex systems. Finally, Twitch’s \textbf{Network Infrastructure} is built to support the high bandwidth requirements of video delivery. They operate a significant number of bare-metal \ac{POPs} worldwide. Additionally, an increasing number of services are being migrated to \ac{AWS}, which helps reduce operational overhead while benefiting from the on demand scalability and flexibility of cloud services.
+    Lastly, Twitch’s \textbf{Network Infrastructure} mostly operates on bare-metal \ac{POPs} worldwide while an increasing number of services are being migrated to \ac{AWS}, which helps reduce operational overhead while benefiting from the on demand scalability and flexibility of cloud services.
 
 \end{enumerate}
 
