@@ -36,7 +36,7 @@ It's main features include:
 \subsection{Current System Architecture}
 
 At the core of the GoCast system, there is the main \ac{API} built on the GoGin Framework and connected to a MariaDB Database. Its main functionality is to manage users, courses, streams, synchronize events between TUM-Live and CAMPUSonline. For user authentication, it uses the provided services of \ac{TUM}'s \ac{LDAP} and \ac{SAML} to allow users to authenticate themselves with their university credentials using \ac{SSO}. 
-Next, whenever a lecture is recorded or livestreamed, the video data is processed by a TUM-Live Worker which then transcodes and segments the video into MPEG-2 compressed video transport stream files. These segments are then uploaded to a shared storage using the VoD Service component so that they can then later be distributed by the Edge Server.
+Next, whenever a lecture is recorded or livestreamed, the video data is processed by a TUM-Live Worker which then transcodes and segments the video into MPEG-2 compressed video transport stream files. These segments are then uploaded to a shared storage using the VOD Service component so that they can then later be distributed by the Edge Server.
 
 \begin{figure}[htpb]
     \centering

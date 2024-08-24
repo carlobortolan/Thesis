@@ -58,7 +58,7 @@ Secondly, to prevent piracy, or any unwanted activities, one can use \ac{DRM} to
 Lastly, protecting the infrastructure itself is critical. Beyond DRM, video streams are often encrypted during transmission (e.g., using \ac{TLS})to protect against interception. Techniques such as IP whitelisting, port restriction, and the use of firewalls are standard practices. Additionally, regular security audits and real-time monitoring can help identify and mitigate potential threats\cite{network_security}.
 
 \section{Deployment}
-Efficient deployment strategies are essential for scaling video streaming services to meet user demands while maintaining performance and reliability. Depending on the size and extent of the project, one approach might be better than another and help save significant time when developing and deploying the different microservices of a streaming service (more on that in chapter \ref{chapter:scaling_tumlive}). This section is meant to give an overview of the most popular deployment technologies and discuss their functionality, use cases and practical monitoring tools.
+Efficient deployment strategies are essential for scaling video streaming services to meet user demands while maintaining performance and reliability. Depending on the size and extent of the project, one approach might be better than another and help save significant time when developing and deploying the different microservices of a streaming service (more on that in chapter \autoref{chapter:scaling_tumlive}). This section is meant to give an overview of the most popular deployment technologies and discuss their functionality, use cases and practical monitoring tools.
 
 \subsection{Docker}
 Docker is a containerization platform that allows developers to package applications and their dependencies into containers. These containers can then be deployed consistently across various environments, ensuring that the application behaves the same way regardless of where it runs.
@@ -100,7 +100,7 @@ In 2008 Netflix started to migrate all its services to the cloud (\ac{AWS}) to m
 Cloud-based video streaming architecture typically involves multiple layers, each responsible for different aspects of the streaming process:
 
 \begin{itemize}
-    \item \textbf{Content Storage:} Platforms like Amazon S3, Azure Blob Storage, and Google Cloud Storage offer scalable and reliable storage solutions for video content. These platforms use object storage systems designed to handle massive amounts of unstructured data. Data is often stored in multiple copies across different geographic locations to ensure durability and availability \cite{cloud_storage_video}. (see also Table \ref{tab:comparison_storage_delivery})
+    \item \textbf{Content Storage:} Platforms like Amazon S3, Azure Blob Storage, and Google Cloud Storage offer scalable and reliable storage solutions for video content. These platforms use object storage systems designed to handle massive amounts of unstructured data. Data is often stored in multiple copies across different geographic locations to ensure durability and availability \cite{cloud_storage_video}. (see also Table \autoref{tab:comparison_storage_delivery})
     
     \item \textbf{Encoding and Transcoding:} Cloud services like AWS Elemental MediaConvert, Azure Media Services, and Google Cloud Video Intelligence handle the encoding and transcoding of video into various formats and bitrates. These services are designed to scale automatically based on the volume of content being processed, ensuring that even large video libraries can be encoded efficiently \cite{cloud_transcoding_video}.
     
@@ -111,7 +111,7 @@ Cloud-based video streaming architecture typically involves multiple layers, eac
 
 \subsection{Comparison: In-house Storage vs. Cloud Storage}
 
-When designing the architecture of a video streaming service, an important decision is to decide how and where the actual video data should be stored. The following table (Table \ref{tab:comparison_storage_delivery}) and subsection summarize the key characteristics of these three approaches in the context of video streaming. 
+When designing the architecture of a video streaming service, an important decision is to decide how and where the actual video data should be stored. The following table (Table \autoref{tab:comparison_storage_delivery}) and subsection summarize the key characteristics of these three approaches in the context of video streaming. 
 
 \textbf{In-House Storage} involves managing own physical storage infrastructure. This allows the owner full control over how the data is managed and allows also for highly customizable configurations, which can be a hard requirement for organizations bound to strict compliance regulations. However, it demands significant upfront capital expenditure and ongoing maintenance. Also, its scalability is limited by the physical infrastructure, requiring careful capacity planning and potentially costly upgrades making short-term adjustments to handle flexible loads very difficult. 
 
