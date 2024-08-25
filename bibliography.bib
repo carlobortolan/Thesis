@@ -1,7 +1,240 @@
-@book{latex,
-  title = {LaTeX : A Documentation Preparation System User's Guide and Reference Manual},
-  publisher = {Addison-Wesley Professional},
-  year = {1994},
-  author = {Leslie Lamport}
+# 3 Examples from Industry
+
+## 3.1 History
+@misc{netflix_functionality,
+    author = {Nair, Mayukh},
+    title = {How Netflix works: the (hugely simplified) complex stuff that happens every time you hit Play},
+    year = {2017},
+    url = {https://medium.com/refraction-tech-everything/how-netflix-works-the-hugely-simplified-complex-stuff-that-happens-every-time-you-hit-play-3a40c9be254b},
+    note = {Accessed: 2024-08-20}
+}
+@misc{netflix_open_connect,
+    author = {Florance, Ken},
+    title = {How Netflix Works With ISPs Around the Globe to Deliver a Great Viewing Experience},
+    year = {2016},
+    url = {https://about.netflix.com/en/news/how-netflix-works-with-isps-around-the-globe-to-deliver-a-great-viewing-experience},
+    note = {Accessed: 2024-08-20}
+}
+@misc{netflix_cloud,
+    author = {Izrailevsky, Yury and Vlaovic, Stevan and Meshenberg, Ruslan},
+    title = {Completing the Netflix Cloud Migration},
+    year = {2016},
+    url = {https://about.netflix.com/en/news/completing-the-netflix-cloud-migration},
+    note = {Accessed: 2024-08-20}
+}
+@misc{netflix_aws,
+    author = {Ciancutti, John},
+    title = {Four Reasons We Choose Amazon’s Cloud as Our Computing Platform},
+    year = {2010},
+    url = {https://netflixtechblog.com/four-reasons-we-choose-amazons-cloud-as-our-computing-platform-4aceb692afec},
+    note = {Accessed: 2024-08-20}
+}
+@misc{netflix_content_distribution,
+    author = {Vora, Mohit and Berglund, Andrew and Sadafal, Videsh and Pfitzner, David and Livengood, Ellen},
+    title = {Distributing Content to Open Connect},
+    year = {2017},
+    url = {https://netflixtechblog.com/distributing-content-to-open-connect-3e3e391d4dc9},
+    note = {Accessed: 2024-08-20}
+}
+@misc{netflix_content_serving,
+    author = {Gallatin, Drew},
+    title = {Serving 100 Gbps from an Open Connect Appliance},
+    year = {2017},
+    url = {https://netflixtechblog.com/serving-100-gbps-from-an-open-connect-appliance-cdb51dda3b99},
+    note = {Accessed: 2024-08-20}
+}
+@article{abr,
+    author = {Bentaleb, Abdelhak and Taani, Bayan and Begen, Ali and Timmerer, Christian and Zimmermann, Roger},
+    year = {2018},
+    month = {08},
+    pages = {1-1},
+    title = {A Survey on Bitrate Adaptation Schemes for Streaming Media over HTTP},
+    volume = {21},
+    journal = {IEEE Communications Surveys \& Tutorials},
+    doi = {10.1109/COMST.2018.2862938}
+}
+@inproceedings{cdn_basic,
+    author = {Adhikari, Vijay and Guo, Yang and Hao, Fang and Hilt, Volker and Zhang, Zhi-Li},
+    year = {2012},
+    month = {03},
+    pages = {},
+    title = {A tale of three CDNs: An active measurement study of Hulu and its CDNs},
+    journal = {Proceedings - IEEE INFOCOM},
+    doi = {10.1109/INFCOMW.2012.6193524}
 }
 
+## 3.2 Statistics
+TODO
+
+## 3.3 Twitch
+@misc{twitch_engineering,
+  author = {Shear, Emmett},
+  title = {Twitch Engineering: An Introduction and Overview},
+  year = {2015},
+  url = {https://blog.twitch.tv/en/2015/12/18/twitch-engineering-an-introduction-and-overview-a23917b71a25},
+  note = {Accessed: 2024-08-20}
+}
+@misc{twitch_chat,
+  author = {Swartz, Ben},
+  title = {Improving Chat Rendering Performance},
+  year = {2016},
+  url = {https://blog.twitch.tv/en/2016/08/08/improving-chat-rendering-performance-1c0945b82764},
+  note = {Accessed: 2024-08-20}
+}
+@misc{twitch_postgresql,
+  author = {Brashears, Aaron},
+  title = {How Twitch uses PostgreSQL},
+  year = {2016},
+  url = {https://blog.twitch.tv/en/2016/10/11/how-twitch-uses-postgresql-c34aa9e56f58},
+  note = {Accessed: 2024-08-20}
+}
+@misc{twitch_pipeline,
+  author = {Tobis, Jon},
+  title = {Twitch Data Analysis — Part 1 of 3: The Twitch Statistics Pipeline},
+  year = {2014},
+  url = {https://blog.twitch.tv/en/2014/04/04/twitch-data-analysis-part-1-of-3-the-twitch-statistics-pipeline-51556a14c961},
+  note = {Accessed: 2024-08-20}
+}
+@misc{twitch_decision_making,
+  author = {Tobis, Jon},
+  title = {Twitch Data Analysis — Part 2 of 3: The Architectural Decision Making Process},
+  year = {2014},
+  url = {https://blog.twitch.tv/en/2014/04/16/twitch-data-analysis-part-2-of-3-the-architectural-decision-making-process-65683a23a74a/},
+  note = {Accessed: 2024-08-20}
+}
+
+## 3.4 YouTube
+TODO
+
+# 4 Scaling Video Streaming Architecture
+
+# 4.1 Video Streaming
+@inproceedings{p2p,
+    author = {Zhou, Yipeng and Chiu, Dah Ming and Lui, John C.s},
+    year = {2007},
+    month = {11},
+    pages = {226-235},
+    title = {A Simple Model for Analyzing P2P Streaming Protocols},
+    isbn = {978-1-4244-1588-5},
+    doi = {10.1109/ICNP.2007.4375853}
+}
+@inproceedings{codec_transcoding,
+    author = {Grois, Dan and Marpe, Detlev and Mulayoff, Amit and Itzhaky, Benaya and Hadar, Ofer},
+    year = {2013},
+    month = {12},
+    pages = {394-397},
+    title = {Performance comparison of H.265/MPEG-HEVC, VP9, and H.264/MPEG-AVC encoders},
+    isbn = {978-1-4799-0294-1},
+    doi = {10.1109/PCS.2013.6737766}
+}
+@article{transcoding,
+    author = {Vetro, Anthony and Christopoulos, Charilaos and Sun, Huifang},
+    year = {2003},
+    month = {04},
+    pages = {18 - 29},
+    title = {Video transcoding architectures and techniques: An overview},
+    volume = {20},
+    journal = {Signal Processing Magazine, IEEE},
+    doi = {10.1109/MSP.2003.1184336}
+}
+@Article{combression,
+    author={Elakkiya, S. and Thivya, K. S.},
+    title={Comprehensive Review on Lossy and Lossless Compression Techniques},
+    journal={Journal of The Institution of Engineers (India): Series B},
+    year={2022},
+    month={Jun},
+    day={01},
+    volume={103},
+    number={3},
+    pages={1003-1012},
+    issn={2250-2114},
+    doi={10.1007/s40031-021-00686-3},
+    url={https://doi.org/10.1007/s40031-021-00686-3}
+}
+@misc{mitre,
+  author = {Clark, Austin},
+  title = {The MITRE Corporation: File and Directory Discovery},
+  year = {2017},
+  url = {https://attack.mitre.org/techniques/T1083/},
+  note = {Accessed: 2024-08-20}
+}
+@article{drm,
+  author    = {Jin, H. and Wu, Y.},
+  title     = {Analysis and design of scalable DRM in VOD},
+  journal   = {International Journal of Digital Content Technology and Its Applications},
+  year      = {2011},
+  volume    = {5},
+  number    = {8},
+  pages     = {407--414},
+  doi       = {10.4156/jdcta.vol5.issue8.47}
+}
+
+# 4.2 Deployment
+TODO
+
+# 4.3 Cloud-Based Video Streaming
+@inbook{cloud_streaming,
+    author = {Li, Xiangbo and Darwich, Mahmoud and Bayoumi, Magdy},
+    title = {A Survey on Cloud-Based Video Streaming Services},
+    publisher = {Elsevier},
+    year = {2020},
+    chapter = {1}
+}
+@article{cloud_streaming_trends,
+    author = {Saini, Tajinder and Sharma, Purushottam and Tanwar, Jaswinder and Alsghier, Hisham and Bhushan, Shashi and Alhumyani, Hesham and Sharma, Vivek and Alutaibi, Ahmed},
+    year = {2024},
+    month = {03},
+    title = {Cloud‐based video streaming services: Trends, challenges, and opportunities},
+    volume = {9},
+    journal = {CAAI Transactions on Intelligence Technology},
+    doi = {10.1049/cit2.12299}
+}
+@phdthesis{cloud_streaming_cost,
+    author = {Darwich, Mahmoud},
+    year = {2017},
+    month = {12},
+    pages = {},
+    title = {Cost-Efficient Video On Demand (VOD) Streaming Using Cloud Services}
+}
+
+# 4.4 Database Sharding
+@inproceedings{skyline_joins,
+    author = {Sun, Dalie and Wu, Sai and Li, Jianzhong and Tung, Anthony},
+    year = {2008},
+    month = {05},
+    pages = {176 - 181},
+    title = {Skyline-join in distributed databases},
+    isbn = {978-1-4244-2161-9},
+    doi = {10.1109/ICDEW.2008.4498313}
+}
+@article{db_sharding,
+    author = {Bagui, Sikha and Nguyen, Loi},
+    year = {2015},
+    month = {04},
+    pages = {36-52},
+    title = {Database Sharding:: To Provide Fault Tolerance and Scalability of Big Data on the Cloud},
+    volume = {5},
+    journal = {International Journal of Cloud Applications and Computing},
+    doi = {10.4018/IJCAC.2015040103}
+}
+@article{db_sharding_cloud,
+    author = {Bagui, Sikha and Nguyen, Loi Tang},
+    title = {Database Sharding: To Provide Fault Tolerance and Scalability of Big Data on the Cloud},
+    year = {2015},
+    publisher = {IGI Global},
+    volume = {5},
+    number = {2},
+    issn = {2156-1834},
+    url = {https://doi.org/10.4018/IJCAC.2015040103},
+    doi = {10.4018/IJCAC.2015040103},
+    journal = {Int. J. Cloud Appl. Comput.},
+    month = {apr},
+    pages = {36–52},
+    numpages = {17}
+}
+
+# 5. Scaling TUMLive
+TODO
+
+# 6. Optimization and Alternative Technologies
+TODO

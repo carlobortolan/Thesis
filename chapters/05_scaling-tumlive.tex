@@ -26,14 +26,14 @@ All relevant source code for the thesis, new architecture, other mentioned proto
 \subsection{Target System Architecture}
 
 To distribute GoCast to different faculties, the subsystems and components responsible for processing and handling video data need to be distributed and hosted by each individual school. 
-The main Tum-Live API instance however, will remain managed by the \ac{ITO} or TUM so that users have a single point of access (instead of having to switch instances when wanting to watch lectures of different faculties).
-To achieve this, each faculty needs to host at least three components: the Runner / Worker component, the VOD Service component and a Edge Server. 
+The main Tum-Live \ac{API} instance however, will remain managed by the \ac{ITO} or TUM so that users have a single point of access (instead of having to switch instances when wanting to watch lectures of different faculties).
+To achieve this, each faculty needs to host at least three components: the Runner / Worker component, the VOD Service component and an Edge Server. 
 Each school can then decide how many resources it wants to allocate to each service depending on their expected usage. The following minimum hardware requirements are set:
 
 \begin{itemize}
     \item At least 1 \ac{VM} as an Edge server. This server serves the videos to the users. Network throughput is important, so if a school serves many users, more instances are needed.
     \item At least 1 Worker or Runner \ac{VM}. This server produces the stream, transcodes the \ac{VOD} and much more. CPU performance is important here. On the same node, for every worker a VOD Service needs to be deployed to expose a simple HTTP interface that accepts file uploads and packages them to a \ac{HLS} stream in a configured location. This stream may then be distributed by the Edge Server.
-    \item Optionally, a school can add additional \ac{VM}s for monitoring (grafana, prometheus, influx...) or for services such as the Voice Service for subtitling live streams and \ac{VOD}s which requiring a NVIDIA CUDA equipped Server to transcribes streams using the Whisper LLM).
+    \item Optionally, a school can add additional \ac{VM}s for monitoring (Grafana, Prometheus, Loki, etc.) or for deploying services such as the Voice Service for subtitling live streams and \ac{VOD}s using the Whisper LLM.
 \end{itemize}
 
 \begin{figure}[htpb]
@@ -51,12 +51,11 @@ Given the proposed system design, this section documents how this system has bee
 
 \subsection{Updating Architecture and Core API}
 
-Initially, GoCast was used primarily by the former faculty of Informatics at TUM. However, with increasing demand, GoCast needs to be extended for university-wide lecture streaming. The solution to this are schools (not to be confused with TUMOnline's 'TUM School').
+Initially, GoCast was used primarily by the former faculty of Informatics at TUM. However, with increasing demand, GoCast needs to be extended for university-wide lecture streaming. The solution to this are schools (not to be confused with TUMOnline's 'TUMOnline School').
 
-The first step of implementing this structure was updating GoCast's role system. Previously, it contained four roles: admin, lecturer, student, visitor. While users with the admin role can manage over the entire system (e.g., create and delete lectures and users, as well as perform maintanance tasks), lecturers can only manage their own lectures and students only manage their own profile and preferences. Howver, with the introduction of schools, this is not sufficient, as the each school needs to have own school-scoped admins that can manage over their schools' resources without being able to interfere with other schools. To do this, a new 'maintainer'-role has been introduced (see below graph).
+The first step of implementing this structure was updating GoCast's role system. Previously, it contained four roles: \texttt{admin}, \texttt{lecturer}, \texttt{student}, \texttt{visitor}. While users with the admin role can manage over the entire system (e.g., create and delete lectures and users, as well as perform maintenance tasks), lecturers can only manage their own lectures and students only manage their own profile and preferences. However, with the introduction of schools, this is not sufficient, as each school needs to have own school-scoped admins that can manage over their schools' resources without being able to interfere with other schools. To do this, a new \texttt{maintainer}-role has been introduced (see \autoref{fig:school-hierarchy}).
 With this, a school using GoCast is managed by a set of maintainers of this school. A user with the maintainer role can be maintainer of multiple schools, and has also maintainer rights for all sub-schools of his schools.  
-Maintainers also have some basic administrative functionality which is limited to their schools' scope (e.g., create, update and delete courses and streams only for those schools which are administered by that maintainer). For an overview of your administered schools, go to the "schools"-tab in the admin dashboard.
-info
+Maintainers also have some basic administrative functionality which is limited to their schools' scope (e.g., create, update and delete courses and streams only for those schools which are administered by that maintainer). 
 
 \subsection{TUMOnline School vs. GoCast School}
 
@@ -65,9 +64,9 @@ TUMOnline has a strict hierarchical structure for its organizations (one school 
 % On a side node, TUMOnline has 7 schools, 29 departments and 487 chairs.
 While GoCast is mainly used by the TUM, in principle it doesn't need to differentiate between organizational types that strictly. Organizations are only relevant when it comes to distributing the livestreams and recordings of a certain entity to that entity's resources (e.g., Workers/Runners and VOD Services). Hence, the introduction of GoCast's "schools" which represent an entity responsible for processing data. In practice, this is most of the time a TUMOnline school, however, one can also create a GoCast "school" for a department, chair or smaller organization which is subordinated to another organization, depending on the specific situation.
 
-Here's an example to illustrate this in a more detailled way:
-The TUMOnline "School of Management" (SOM) wants to start using GoCast. Hence, the SOM's IT team contacts the admins of GoCast who then create a new GoCast "school" of type TUM School and assign the SOM IT team as maintainers.
-The subordinated "Chair of Financial Management and Capital Markets" (FA), however, has its own data center and wants to host its lectures with its own resources. In this case, either one of the SOM maintainers or the RBG can create a new GoCast "school" as a child of the SOM school and accordingly assign new maintainers from the FA-team. Now, the FA-team have full control over their sub-school and can connect their own resources from their data center with GoCast, independently of the SOM.
+Here's an example to illustrate this in a more detailed way:
+The TUMOnline "School of Management" (SOM) wants to start using GoCast. Hence, the SOM's IT team contacts the admins of GoCast who then create a new GoCast "school" TUM School and assign the SOM IT team as maintainers.
+The subordinated "Chair of Financial Management and Capital Markets" (FA), however, has its own data center and wants to host its lectures with its own resources. In this case, either one of the SOM maintainers or the RBG can create a new GoCast "school" as a child of the SOM school and accordingly assign new maintainers from the FA-team. Now, the the FA-maintainers have full control over their sub-school and can connect their own resources from their data center with GoCast, independently of the SOM.
 
 % The idea is the following: To avoid one entity having to manage and process all streaming data for the entire university (or multiple universities), GoCast is distributed to multiple entities. Each entity (aka GoCast 'school') has so-called maintainers (users with the maintainer user role) that are allowed to manage the school's resources such as Workers/Runners, VOD Services, etc.
 
@@ -88,10 +87,10 @@ The subordinated "Chair of Financial Management and Capital Markets" (FA), howev
 
 \section{Distributed Resources}
 
-Now that the user role system had been updated, the next step was to find a solution to have the different resources such as Workers and Runners be able to be connected by a school to the main cluster of Workers and Runners independently of the others, but at the same time be able to process and distribute requests between each other regardless of the school they are in. This section explains in detail how each subsystem works as part of the distributed GoCast system. 
+Now that the user role system had been updated, the next step was to find a solution to have the different resources such as Workers and Runners could be connected to the main cluster of Workers and Runners independent of the others. However, at the same time, they should be able to process and distribute requests between each other regardless of the school they are in. This section explains in detail how each subsystem works as part of the distributed GoCast system. 
 
 \subsection{Workers and Runners}
-To set up a distributed network of Workers and Runners, the first step was to update the way that Workers and Runners can be connected to the main network of GoCast. To do this, a school maintainer can create a new school-token, a \ac{JWT} that expires after seven hours and allows its owner to connect new resources for the school (see Fig. \autoref{fig:school-token}).
+To set up a distributed network of Workers and Runners, the first step was to update the system in such a way that Workers and Runners can be connected by a school's maintainer to the main network of GoCast. To do this, a school maintainer can create a new school-token, a \ac{JWT} that expires after seven hours and allows its owner to connect new resources for the school (see \autoref{fig:school-token}).
 
 \begin{figure}[htpb]
     \centering
@@ -101,7 +100,7 @@ To set up a distributed network of Workers and Runners, the first step was to up
 
 When a maintainer starts a new Worker or Runner, he can include this token in the containers environment (e.g., via a \texttt{docker-compose.yml} file or by passing it as an argument directly to Docker using \texttt{-e Token=<...>}). When starting up, the Worker or Runner sends a requests to join the Worker or Runner pool of GoCast using the school-token and additional data (e.g., host name, IP or FQDN address, \ac{VM} workload, etc.) and - if successful - receives a token without expiration which is then used to identify all subsequent requests from and to the Worker or Runner.  
 
-Maintainers can see and manage the current status of their registered resources in the Resource-Dashboard of GoCast (see Fig. \autoref{fig:resource-dashboard}).
+Maintainers can see and manage the current status of their registered resources in the Resource-Dashboard of GoCast (see \autoref{fig:resource-dashboard}).
 
 \begin{figure}[htpb]
     \centering
@@ -109,19 +108,20 @@ Maintainers can see and manage the current status of their registered resources 
     \caption[Resources Dashboard]{Resources Dashboard}\label{fig:resource-dashboard}
 \end{figure}
 
-Now, whenever a new lecture is being recorded or uploaded, the main GoCast \ac{API} selects an available worker for this school and addresses it given the host name and IP address that the worker has registered when first connecting to GoCast. For more details on how the distribution of tasks works, see Section \autoref{section:shared-resources}.
+Now, whenever a new lecture is being recorded or uploaded, the main GoCast \ac{API} selects an available worker for this school and addresses it given the host name and IP address that the worker has registered when first connecting to GoCast. For more details on how the distribution of tasks works, see \autoref{section:shared-resources}.
 
 When the Worker or Runner receives such a request, it initiates the video transcoding process using FFmpeg. The transcoding is performed based on the specific stream version (e.g., \texttt{CAM}, \texttt{PRES} or \texttt{COMB}), adjusting parameters like compression level and priority (niceness) accordingly. The process is monitored in real-time, with progress being reported back to the GoCast system, ensuring that any issues are retried with backoff strategies and that the final transcoded video meets the expected duration and quality standards.
 
 \subsection{VOD Service and Edge Server}
 
-Once the Worker or Runner has completed the transcoding process, the VOD Service starts detecting silent sections in the recordings so that the user will be able to skip these and get directly to the start of the actual lecture. Then, it packages them to a \ac{HLS} stream and pushes the packed stream to the school's recording storage.
+Once the Worker or Runner has completed the transcoding process, the VOD Service starts detecting silent sections in the recordings so that the user will be able to skip these and get directly to the start of the actual lecture. Then, it packages them to a \ac{HLS} stream and pushes the packaged stream to the school's recording storage.
 
 To ensure easy access to these recordings, each school also needs to have its own Edge Server set up. The VOD Service at each school is responsible for managing the processing, packaging, and storage of the recordings locally, while the Edge Server is responsible for distributing the streams. This also has the advantage that each school maintains control over its data, and reduces latency by storing the recordings closer to the end-users (assuming that a user is more likely to be closer to his school than to others).
-Additionally, the Edge Server acts as a local cache for the school's content. When students or faculty access recordings, the Edge Server destributes the content directly from the local storage, reducing the load on the central servers.
+Additionally, the Edge Server acts as a local cache for the school's content. When students access recordings, the Edge Server distributes the content directly from the local storage, reducing the load on the central servers.
 
 The dependency on Workers or Runners for transcoding means that the efficiency and speed of the VOD Service and Edge Server setup depend on the availability and performance of these services. Therefore, it is necessary that a school has enough Workers or Runners to support the number of recorded lectures.
-If a school has many concurrent viewers, it might need to consider having multiple Edge Servers running, as they have a limited bandwidth and can only serve approximately . When network traffic to worker nodes exceeds the available bandwidth, the architecture might look like the example shown in Fig.\autoref{fig:edge-network}.
+If a school has many concurrent viewers, it might need to consider having multiple Edge Servers running, as they have a limited bandwidth. %and can only serve approximately xxx.
+When network traffic to worker nodes exceeds the available bandwidth, the architecture might look like the example shown in \autoref{fig:edge-network}.
 
 \begin{figure}[htpb]
     \centering
@@ -143,7 +143,7 @@ GoCast supports not just recordings from the lecture hall or manual uploads, but
     \item For lecturers who teach at multiple schools (e.g., the Chair of Databases and the Chair of Bioinformatics), managing different URLs for each school would be inconvenient.
 \end{enumerate}
 
-The solution for this is the RTMP-Proxy microservice. In a nutshell, the RTMP-Proxy acts as a router-like service that accepts all \ac{RTMP} self-stream requests and redirects them accordingly. With this, all a lecturer has to is creating a new personal Token (see Fig.\autoref{fig:personal-token}) and copy the token together with the target URL of the RTPM-Proxy into a streaming software only once.
+The solution for this is the RTMP-Proxy microservice. In a nutshell, the RTMP-Proxy acts as a router-like service that accepts all \ac{RTMP} self-stream requests and redirects them accordingly. With this, all a lecturer has to is creating a new personal Token (see \autoref{fig:personal-token}) and copy the token together with the target URL of the RTPM-Proxy into a streaming software only once.
 
 \begin{figure}[htpb]
     \centering
@@ -172,7 +172,7 @@ This section explains different approaches for the allocation of resources in th
 
 \subsection{Shared Resources}
 
-Before explaining how resources in the GoCast Network are dynamically allocated to different tasks, it is first important to explain in detail how a school actually "owns" a certain resource such as a Worker. As described in Section \autoref{section:rbac}, schools are organized in a hierarchical manner. One school an have multiple sub-schools which can again have multiple sub-sub-schools and so forth. When a school has deployed its own resources, by default accessible only by the school itself and its subschools. Using the example shown in Fig. \autoref{fig:school-hierarchy}, this would mean that if there's a lecture uploaded by \textit{School 1}, only public resources and the school's own private resources are considered. For a lecture of \textit{School 2a}, all public resources, the school's own private resources as well as its parent-school's resources (and recursivly so on) are considered. 
+Before explaining how resources in the GoCast Network are dynamically allocated to different tasks, it is first important to explain in detail how a school actually "owns" a certain resource such as a Worker. As described in \autoref{section:rbac}, schools are organized in a hierarchical manner. One school can have multiple sub-schools which can again have multiple sub-sub-schools and so forth. When a school has deployed its own resources, by default accessible only by the school itself and its sub-schools. Using the example shown in \autoref{fig:school-hierarchy}, this would mean that if there's a lecture uploaded by \textit{School 1}, only public resources and the school's own private resources are considered. For a lecture of \textit{School 2a}, all public resources, the school's own private resources as well as its parent-school's resources (and recursively so on) are considered. 
 
 \begin{figure}[htpb]
     \centering
@@ -346,7 +346,7 @@ Given the objective function and the constraints, the solution to the \ac{LP} ca
         model.optimize()
         \end{lstlisting}
       \end{tabular}
-      \label{fig:recursive-allocation}
+      \label{fig:lp-optimization}
     \end{figure}
 
 \end{enumerate}
