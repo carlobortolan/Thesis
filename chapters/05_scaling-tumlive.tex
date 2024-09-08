@@ -87,7 +87,7 @@ The subordinated "Chair of Financial Management and Capital Markets" (FA), howev
 
 \section{Distributed Resources}
 
-Now that the user role system had been updated, the next step was to find a solution to have the different resources such as Workers and Runners could be connected to the main cluster of Workers and Runners independent of the others. However, at the same time, they should be able to process and distribute requests between each other regardless of the school they are in. This section explains in detail how each subsystem works as part of the distributed GoCast system. 
+Now that the user role system had been updated, the next step was to find a solution to have the different resources such as Workers and Runners connected to the main cluster of Workers and Runners independent of the others. However, at the same time, they should be able to process and distribute requests between each other regardless of the school they are in. This section explains in detail how each subsystem works as part of the distributed GoCast system. 
 
 \subsection{Workers and Runners}
 To set up a distributed network of Workers and Runners, the first step was to update the system in such a way that Workers and Runners can be connected by a school's maintainer to the main network of GoCast. To do this, a school maintainer can create a new school-token, a \ac{JWT} that expires after seven hours and allows its owner to connect new resources for the school (see \autoref{fig:school-token}).
@@ -135,7 +135,9 @@ When network traffic to worker nodes exceeds the available bandwidth, the archit
 
 \subsection{RTMP-Proxy}
 
-GoCast supports not just recordings from the lecture hall or manual uploads, but also so called self-streams. The idea behind self-streams is, that any lecturer can go live at any given time and stream from his own device without having to be in the lecture hall. In past, to do this, a lecturer had to go open GoCast, go to one his courses' page, select a lecture, and copy a link (such as: \texttt{rtmp://worker.example.com:1935/cs-123? secret=5caa9d6447564cb5822995888e224f9a}) together with a secret stream key into a streaming software like OBS Studio. With the introduction of the school system there are several reasons why this can't work:
+\subsubsection{Limitaitons of GoCast's Selfstreaming}
+
+GoCast supports not just recordings from the lecture hall or manual uploads, but also so called self-streams. The idea behind self-streams is, that any lecturer can go live at any given time and stream from his own device without having to be in the lecture hall. In past, to do this, a lecturer had to go open GoCast, go to one his courses' page, select a lecture, and copy a link (such as: \texttt{rtmp://worker.example.com/cs-123? secret=5caa9d6447564cb5822995888e224f9a}) together with a secret stream key into a streaming software like OBS Studio. With the introduction of the school system there are several reasons why this can't work:
 
 \begin{enumerate}
     \item The URL might change depending on the availability of workers and schools.
@@ -143,7 +145,10 @@ GoCast supports not just recordings from the lecture hall or manual uploads, but
     \item For lecturers who teach at multiple schools (e.g., the Chair of Databases and the Chair of Bioinformatics), managing different URLs for each school would be inconvenient.
 \end{enumerate}
 
-The solution for this is the RTMP-Proxy microservice. In a nutshell, the RTMP-Proxy acts as a router-like service that accepts all \ac{RTMP} self-stream requests and redirects them accordingly. With this, all a lecturer has to is creating a new personal Token (see \autoref{fig:personal-token}) and copy the token together with the target URL of the RTPM-Proxy into a streaming software only once.
+\subsubsection{Proposed Solution and Data-Flow}
+
+The solution for this is the RTMP-Proxy microservice. In a nutshell, the RTMP-Proxy acts as a router-like service that accepts all \ac{RTMP} self-stream requests and redirects them accordingly. With this, all a lecturer has to do is creating a new personal Token (see \autoref{fig:personal-token}) and copy the token together with the target URL of the RTPM-Proxy into a streaming software only once.
+After this initial setup, the lecturer can go live whenever they want by simply using the pre-configured URL and token.
 
 \begin{figure}[htpb]
     \centering
@@ -151,20 +156,63 @@ The solution for this is the RTMP-Proxy microservice. In a nutshell, the RTMP-Pr
     \caption[Creation of Personal Token and RTMP-Proxy URL]{Creation of Personal Token and RTMP-Proxy URL}\label{fig:personal-token}
 \end{figure}
 
-After this initial setup, the lecturer can go live whenever they want by simply using the pre-configured URL and token.
 
-The internal process of the RTMP-Proxy is as follows: 
+The internal process of the RTMP-Proxy is as follows (see also \autoref{fig:rtmp-proxy}): 
 
 \begin{enumerate}
     \item An incoming \ac{RTMP} request is received: 
-    \texttt{rtmp://rtmp-proxy.example.com:1935/ <user-id>?token=<personal-token>}.
-    \item The RTMP-Proxy sends a self-stream request to the main GoCast \ac{API} with the provided \texttt{user-id} and \texttt{personal-token}.
-    \item The GoCast \ac{API} returns the details of the school from which the user is streaming, including the \ac{RTMP} URL of the ingest worker currently available for that school.
+    \texttt{rtmp://rtmp-proxy.example.com/live/ <personal-token>}.
+    \item The RTMP-Proxy sends a self-stream request to the main GoCast \ac{API} with the provided \texttt{personal-token}.
+    \item The GoCast \ac{API} validates the \texttt{personal-token} and uses it to detect whether the lecturer has a scheduled lecture for the current time slot or a soon upcoming lecture and automatically starts the live-stream preview for viewers. Then it checks the stream's course's school and returns the \ac{RTMP} URL of the ingest worker currently available for that school together with the course-slug and secret stream key for this stream: \\ 
+    \texttt{rtmp://worker.example.com/<course-slug>?secret=<secret>/<secretKey>}.
     \item The RTMP-Proxy redirects the \ac{RTMP} request to the retrieved \ac{RTMP} URL.
-    \item The school's ingest worker detects whether the lecturer has a scheduled lecture for the current time slot or an upcoming lecture and automatically starts the live-stream for viewers.
+    \item The school's ingest worker know receives the proxied \ac{RTMP} request as if it were sent directly to it by the lecturers streaming software.
 \end{enumerate}
 
-While the RTMP-Proxy is far from perfect, it is meant as a prototype of a possible solution to stream via \ac{RTMP} in a distributed network where the final target address of the stream request is unknown when making the request. As the RTMP-Proxy is independent of other services in the GoCast environment (besides the main \ac{API}), it can be scaled very easily by deploying multiple RTMP-Proxies and having for example a Round-robin DNS distribute the load accordingly.
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=300pt]{images/RtmpProxy.png}
+    \caption[RTMP-Proxy Flow]{RTMP-Proxy Data Flow}\label{fig:rtmp-token}
+\end{figure}
+
+\subsubsection{Architectural Challanges and Limitations with RTMP}
+
+Initially, for the prototype of the RTMP-Proxy the idea was to develop a microservice similar to the Edge Server or VOD Service written in Go that would redirect the RTMP request (similar to a HTTP 302 redirect). However, after some testing, it quickly became obvious that Go doesn't have yet libraries to handle RTMP requests with the necessary granularity. Hence, to proceed with this approach,it would require to use Go's native libraries to: 
+\begin{itemize}
+\item Handle the incoming \ac{RTMP} request
+\item Perform a RTMP handshake
+\item Extract the user token from the RTMP request
+\item Find out the destination address
+\item Establish a connection with the destination host
+\item Streaming the video chunks directly to the destination address
+\end{itemize}
+
+This might work short term, but on the long term it would lead to other problems with potential bugs, scalability issues, complex error handling and unknown security vulnerabilities if not properly maintained.
+
+A better solution was to use the \href{https://github.com/arut/nginx-rtmp-module}{nginx-rtmp-module}. This module extends the Nginx to handle \ac{RTMP} streaming requests natively, making it a more stable solution~\parencite{nginx_rtmp_module}. 
+Now, whenever a stream request arrives at the proxy server, Nginx intercepts the request and invokes a Lua script that extracts the stream key (the path token) and requests the actual destination URL from the GoCast \ac{API}. Upon receiving the destination URL, Nginx dynamically pushes the stream to the target server.
+
+\subsubsection{Implementation Details: FFmpeg vs OBS Compatibility}
+
+During the testing phase, it was observed that at times streaming via FFmpeg worked perfectly fine, while attempts using OBS failed:
+\begin{itemize}
+    \item \textbf{Encoding Mismatch}: FFmpeg explicitly specifies H.264 for video and AAC for audio. OBS, however, may use different default codecs. The RTMP server required H.264 video, and anything else would cause a rejection.
+    \item \textbf{Keyframe Interval}: RTMP servers generally expect a keyframe interval of around 2 seconds. OBS settings needed to be adjusted to enforce this interval.
+    \item \textbf{Bitrate Mismatch}: High bitrate settings in OBS were causing overloads, which led to connection issues with the RTMP server. Lowering the bitrate resolved the issue.
+    \item \textbf{URL Composition}: The self-streaing URL used to call the proxy is structured like: \texttt{<protocol>://<host>:<port>/live/<stream\_key>}. OBS however, requires the URL and stream key to be set separately (see \autoref{fig:obs-rtmp}).
+\end{itemize}
+
+This was later fixed by changing the following settings in OBS:
+\begin{itemize}
+    \item Set the video encoder to \texttt{x264} (H.264).
+    \item Set the audio encoder to \texttt{AAC}.
+    \item Adjust the bitrate to a more reasonable level, matching what was tested with FFmpeg.
+    \item Set the keyframe interval to 2 seconds for better compatibility with the nginx \ac{RTMP} server.
+\end{itemize}
+
+\subsubsection{Final Words on Scaling the RTMP-Proxy}
+
+While the RTMP-Proxy is far from perfect, it is meant as a prototype of a possible solution to stream via \ac{RTMP} using OBS in a distributed network where the final target address of the stream request is unknown when making the request. As the RTMP-Proxy is independent of other services in the GoCast environment (besides the main \ac{API} to receive the destination URL), it can be scaled very easily by deploying multiple RTMP-Proxies and having for example a Round-robin DNS distribute the load accordingly.
 
 \section{Shared Resources}\label{section:shared-resources}
 
@@ -207,7 +255,7 @@ The following are four approaches considered for the decision algorithm behind t
     
     % \item \textbf{Recursive School-Based Allocation:}  
 \subsubsection{2. Recursive School-Based Allocation}
-    When a task (i.e. a video upload) is started, the system recursively checks for available resources, starting from the school's own resources and moving up the hierarchy to include parent schools and shared resources as described in the previous subsection. This ensures that each task is allocated to the most appropriate resource, improving resource utilization across the network by allowing sub-schools to benefit from the resources of their parent schools, while respecting the resource ownership rules defined by each school.
+    When a task (i.e. a video upload) is started, the system recursively checks for available resources, starting from the school's own resources and moving up the hierarchy to include parent schools and shared resources as described in the previous subsection. This guarantees that each task is allocated to the most appropriate resource, improving resource utilization across the network by allowing sub-schools to benefit from the resources of their parent schools, while respecting the resource ownership of each school.
 
     \begin{figure}[htpb]
       \begin{tabular}{c}
@@ -229,7 +277,7 @@ The following are four approaches considered for the decision algorithm behind t
 
     % \item \textbf{Priority-Based Allocation:}  
 \subsubsection{3. Priority-Based Allocation}
-    Assign tasks to Workers and Runners based on a dynamically adjusted priority queue. The tasks would be prioritized based on factors such as viewer count, failure rate, \ac{VM} workload or the type of content being processed. For instance, live-streaming tasks could be given a higher priority over \ac{VOD} uploads and hence be processed by a Worker that runs on a more performant \ac{VM}. This approach would complete critical tasks first, and re-schedule less urgent tasks for a later point in time.
+    Assign tasks to Workers and Runners based on a dynamically adjusted priority queue. The tasks would be prioritized based on factors such as viewer count, failure rate, \ac{VM} workload or the type of content being processed. For example, live-streaming tasks could be given a higher priority over \ac{VOD} uploads and hence be processed by a Worker that runs on a more performant \ac{VM}. This approach would complete critical tasks (e.g., livestreaming) first, and re-schedule less urgent tasks (e.g., \ac{VOD} uploads or thumbnail generation) for a later point in time.
 
     \begin{figure}[htpb]
       \begin{tabular}{c}
