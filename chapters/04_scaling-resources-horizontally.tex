@@ -57,45 +57,45 @@ Secondly, to prevent piracy, or any unwanted activities, one can use \ac{DRM} to
 
 Lastly, protecting the infrastructure itself is critical. Beyond DRM, video streams are often encrypted during transmission (e.g., using \ac{TLS})to protect against interception. Techniques such as IP whitelisting, port restriction, and the use of firewalls are standard practices. Additionally, regular security audits and real-time monitoring can help identify and mitigate potential threats.
 
-\section{Deployment}
-Efficient deployment strategies are essential for scaling video streaming services to meet user demands while maintaining performance and reliability. Depending on the size and extent of the project, one approach might be better than another and help save significant time when developing and deploying the different microservices of a streaming service (more on that in \autoref{chapter:scaling_tumlive}). This section is meant to give an overview of the most popular deployment technologies and discuss their functionality, use cases and monitoring tools.
+% \section{Deployment}
+% Efficient deployment strategies are essential for scaling video streaming services to meet user demands while maintaining performance and reliability. Depending on the size and extent of the project, one approach might be better than another and help save significant time when developing and deploying the different microservices of a streaming service (more on that in \autoref{chapter:scaling_tumlive}). This section is meant to give an overview of the most popular deployment technologies and discuss their functionality, use cases and monitoring tools.
 
-\subsection{Docker}
-TODO
+% \subsection{Docker}
+% TODO
 % Docker is a containerization platform that allows developers to package applications and their dependencies into containers. These containers can then be deployed consistently across various environments, ensuring that the application behaves the same way regardless of where it runs.
 
 % In video streaming, Docker is used to encapsulate encoding services, web servers, databases, and other components. Containers can be easily scaled across multiple servers, enabling the deployment of video streaming applications in a distributed and scalable manner. Docker images can be versioned and deployed through Continuous Integration/Continuous Deployment (CI/CD) pipelines, allowing for rapid updates and rollbacks without downtime~\parencite{docker_deployment}.
 
-\subsection{Docker Swarm}
-TODO
+% \subsection{Docker Swarm}
+% TODO
 % Docker Swarm extends Docker's capabilities by enabling clustering and orchestration of containers across multiple hosts. It allows for the seamless management of a large number of containers, automatically distributing workloads across a cluster to optimize resource utilization.
 
 % In the context of video streaming, Docker Swarm can be used to manage the various microservices involved in streaming, such as encoding, storage, and delivery. Swarm handles tasks like load balancing, scaling containers up or down based on demand, and ensuring high availability by replicating services across different nodes~\parencite{docker_swarm_deployment}.
 
-\subsection{Kubernetes}
-TODO
+% \subsection{Kubernetes}
+% TODO
 % Kubernetes is an advanced orchestration platform that automates the deployment, scaling, and management of containerized applications. Kubernetes offers more advanced features than Docker Swarm, including automatic scaling, self-healing, and rolling updates.
 
 % For video streaming services, Kubernetes can manage thousands of containers across a distributed infrastructure. It ensures that services remain available even if some nodes fail, by automatically rescheduling containers on healthy nodes. Kubernetes' Horizontal Pod Autoscaler can dynamically adjust the number of running containers based on CPU utilization or custom metrics, ensuring that the streaming service can handle fluctuating demand~\parencite{kubernetes_video_deployment}.
 
 % Kubernetes also supports StatefulSets, which are essential for managing stateful applications like databases, ensuring that each instance maintains its identity across reschedules. This is particularly important for maintaining the consistency and availability of data in video streaming platforms~\parencite{statefulset_kubernetes}.
 
-\subsection{Monitoring Tools}
-To keep an overview of what the current status of the system is and analyze past errors and logs, monitoring is essential. Several (open source) tools are commonly used in the industry:
+% \subsection{Monitoring Tools}
+% To keep an overview of what the current status of the system is and analyze past errors and logs, monitoring is essential. Several (open source) tools are commonly used in the industry:
 
-\begin{itemize}
-    \item \textbf{Network Performance} tools like \href{https://github.com/NagiosEnterprises/nagioscore}{Nagios} and \href{https://github.com/zabbix/zabbix}{Zabbix} monitor and analyze network traffic, server health and bandwidth to identify bottlenecks and optimize network performance.
+% \begin{itemize}
+%     \item \textbf{Network Performance} tools like \href{https://github.com/NagiosEnterprises/nagioscore}{Nagios} and \href{https://github.com/zabbix/zabbix}{Zabbix} monitor and analyze network traffic, server health and bandwidth to identify bottlenecks and optimize network performance.
     
-    \item \textbf{CDN Monitoring} tools such as \href{https://github.com/DataDog/datadog-agent}{Datadog} track \ac{CDN} performance, latency, and availability, ensuring that content delivery is optimized across different geographic regions.
+%     \item \textbf{CDN Monitoring} tools such as \href{https://github.com/DataDog/datadog-agent}{Datadog} track \ac{CDN} performance, latency, and availability, ensuring that content delivery is optimized across different geographic regions.
     
-    \item \textbf{Video Quality Monitoring} tools like \href{https://github.com/ccrisan/streameye}{StreamEye} or \href{https://github.com/Netflix/vmaf}{VMAF (Video Multimethod Assessment Fusion)} assess video quality from the viewer's perspective. These tools analyze factors like resolution, bitrate, and compression artifacts to ensure that the delivered video meets quality standards.
+%     \item \textbf{Video Quality Monitoring} tools like \href{https://github.com/ccrisan/streameye}{StreamEye} or \href{https://github.com/Netflix/vmaf}{VMAF (Video Multimethod Assessment Fusion)} assess video quality from the viewer's perspective. These tools analyze factors like resolution, bitrate, and compression artifacts to ensure that the delivered video meets quality standards.
     
-    \item \textbf{Error Tracking} systems like \href{https://github.com/getsentry/sentry}{Sentry}, \href{https://github.com/rollbar?q=&type=all&language=&sort=stargazers}{Rollbar}, and \href{https://github.com/grafana/grafana}{Grafana} detect and report errors in real-time, allowing for rapid response to issues that could affect the streaming experience.
+%     \item \textbf{Error Tracking} systems like \href{https://github.com/getsentry/sentry}{Sentry}, \href{https://github.com/rollbar?q=&type=all&language=&sort=stargazers}{Rollbar}, and \href{https://github.com/grafana/grafana}{Grafana} detect and report errors in real-time, allowing for rapid response to issues that could affect the streaming experience.
     
-    \item \textbf{Logging and Dashboards} tools like \href{https://github.com/grafana/loki}{Loki}, \href{https://github.com/prometheus/prometheus}{Prometheus}, and \href{https://github.com/grafana/grafana}{Grafana} provide detailed insights into system performance, user behavior, and potential issues. These tools can be integrated into real-time dashboards and connected to third party notification services, offering a clear overview of the entire streaming infrastructure and instant alerts to allow for immediate countermeasures.
-\end{itemize}
+%     \item \textbf{Logging and Dashboards} tools like \href{https://github.com/grafana/loki}{Loki}, \href{https://github.com/prometheus/prometheus}{Prometheus}, and \href{https://github.com/grafana/grafana}{Grafana} provide detailed insights into system performance, user behavior, and potential issues. These tools can be integrated into real-time dashboards and connected to third party notification services, offering a clear overview of the entire streaming infrastructure and instant alerts to allow for immediate countermeasures.
+% \end{itemize}
 
-\section{Cloud-Bsased Video Streaming}
+\section{Cloud-Based Video Streaming}
 
 In 2008 Netflix started to migrate all its services to the cloud (\ac{AWS}) to move away from vertically scaled single points of failure, like relational databases, towards highly reliable, horizontally scalable, distributed systems in the cloud~\parencite{netflix_aws}. Since then it has become the standard to deploy and scale using third party cloud services. This section goes into detail how this can be especially useful for video streaming infrastructure. 
 

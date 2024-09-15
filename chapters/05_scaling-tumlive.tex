@@ -147,21 +147,21 @@ GoCast supports not just recordings from the lecture hall or manual uploads, but
 
 \subsubsection{Proposed Solution and Data-Flow}
 
-The solution for this is the RTMP-Proxy microservice. In a nutshell, the RTMP-Proxy acts as a router-like service that accepts all \ac{RTMP} self-stream requests and redirects them accordingly. With this, all a lecturer has to do is creating a new personal Token (see \autoref{fig:personal-token}) and copy the token together with the target URL of the RTPM-Proxy into a streaming software only once.
+The solution for this is the RTMP-Proxy microservice. In a nutshell, the RTMP-Proxy acts as a router-like service that accepts all \ac{RTMP} self-stream requests and redirects them accordingly. With this, all a lecturer has to do is creating a new personal token (see \autoref{fig:personal-token}) and copy the token together with the target URL of the RTPM-Proxy into a streaming software only once.
 After this initial setup, the lecturer can go live whenever they want by simply using the pre-configured URL and token.
 
 \begin{figure}[htpb]
     \centering
     \includegraphics[width=\textwidth]{images/PersonalToken.png}
-    \caption[Creation of Personal Token and RTMP-Proxy URL]{Creation of Personal Token and RTMP-Proxy URL}\label{fig:personal-token}
+    \caption[Creation of Personal Token in TUMLive and RTMP-Proxy URL]{Creation of Personal Token in TUMLive and RTMP-Proxy URL}\label{fig:personal-token}
 \end{figure}
 
 
 The internal process of the RTMP-Proxy is as follows (see also \autoref{fig:rtmp-proxy}): 
 
 \begin{enumerate}
-    \item An incoming \ac{RTMP} request is received: 
-    \texttt{rtmp://rtmp-proxy.example.com/live/ <personal-token>}.
+    \item An incoming \ac{RTMP} request is received:\\
+    \texttt{rtmp://proxy.example.com/live/<personal-token>}.
     \item The RTMP-Proxy sends a self-stream request to the main GoCast \ac{API} with the provided \texttt{personal-token}.
     \item The GoCast \ac{API} validates the \texttt{personal-token} and uses it to detect whether the lecturer has a scheduled lecture for the current time slot or a soon upcoming lecture and automatically starts the live-stream preview for viewers. Then it checks the stream's course's school and returns the \ac{RTMP} URL of the ingest worker currently available for that school together with the course-slug and secret stream key for this stream: \\ 
     \texttt{rtmp://worker.example.com/<course-slug>?secret=<secret>/<secretKey>}.
@@ -172,7 +172,7 @@ The internal process of the RTMP-Proxy is as follows (see also \autoref{fig:rtmp
 \begin{figure}[htpb]
     \centering
     \includegraphics[width=300pt]{images/RtmpProxy.png}
-    \caption[RTMP-Proxy Flow]{RTMP-Proxy Data Flow}\label{fig:rtmp-token}
+    \caption[RTMP-Proxy Flow]{RTMP-Proxy Data Flow}\label{fig:rtmp-proxy}
 \end{figure}
 
 \subsubsection{Architectural Challanges and Limitations with RTMP}
@@ -189,8 +189,8 @@ Initially, for the prototype of the RTMP-Proxy the idea was to develop a microse
 
 This might work short term, but on the long term it would lead to other problems with potential bugs, scalability issues, complex error handling and unknown security vulnerabilities if not properly maintained.
 
-A better solution was to use the \href{https://github.com/arut/nginx-rtmp-module}{nginx-rtmp-module}. This module extends the Nginx to handle \ac{RTMP} streaming requests natively, making it a more stable solution~\parencite{nginx_rtmp_module}. 
-Now, whenever a stream request arrives at the proxy server, Nginx intercepts the request and invokes a Lua script that extracts the stream key (the path token) and requests the actual destination URL from the GoCast \ac{API}. Upon receiving the destination URL, Nginx dynamically pushes the stream to the target server.
+A better solution was to use the \href{https://github.com/arut/nginx-rtmp-module}{nginx-rtmp-module}. This module extends Nginx to handle \ac{RTMP} streaming requests natively, making it a more stable solution~\parencite{nginx_rtmp_module}. 
+Now, whenever a stream request arrives at the proxy server, Nginx intercepts the request and invokes a script that extracts the stream key (the path token) and requests the actual destination URL from the GoCast \ac{API}. Upon receiving the destination URL, Nginx dynamically pushes the stream to the target server.
 
 \subsubsection{Implementation Details: FFmpeg vs OBS Compatibility}
 
