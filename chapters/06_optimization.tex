@@ -241,18 +241,10 @@ A major limitations of GoCast is its chat system. Currently, it is implemented a
 While the gRPC prototype showed promising results, when it comes to comparing the different API design approaches, there are additional factors that can be considered:
 
 \begin{itemize}
-    \item Other Metrics:
-    \begin{itemize} 
-        \item \textbf{Resource Usage (CPU, Memory, Network)}
-        It might be interesting to compare how efficiently each API handles resources under load. gRPC, with its smaller binary payloads, may consume less bandwidth, but may use more CPU. 
-        Also for potential bandwidth issues, network traffic could be analyzed to understand the differences in payload size and bandwidth usage.
-        
-        \item \textbf{Error Rates and Reliability}
-        In a production-like environment it could be evaluated how both systems behave under load or failure scenarios. Does one API lead to more errors under heavy load, or can both handle the same level of traffic? One could measure the error rate (=percentage of failed requests during the test) or the time to recover from errors or failures (e.g., retries, handling transient errors, etc.).
-    \end{itemize}
-   
-    \item Qualitative Factors to Consider:
-    \begin{itemize}
-        \item \textbf{Ease of Integration and Development Effort}: 
-            \end{itemize}
+    \item \textbf{Resource Usage (CPU, Memory, Network)}
+    It might be interesting to compare how efficiently each API handles resources under load. gRPC, with its smaller binary payloads, may consume less bandwidth, but may use more CPU. 
+    Also for potential bandwidth issues, network traffic could be analyzed to understand the differences in payload size and bandwidth usage.
+    
+    \item \textbf{Error Rates and Reliability}
+    In a production-like environment it could be evaluated how both systems behave under load or failure scenarios. Does one API lead to more errors under heavy load, or can both handle the same level of traffic? One could measure the error rate (=percentage of failed requests during the test) or the time to recover from errors or failures (e.g., retries, handling transient errors, etc.).
 \end{itemize}
