@@ -18,7 +18,7 @@ To develop and test the prototype of a distributed architecture for TUM-Live for
 \end{itemize}
 
 After the target architecture had been deployed (on a smaller scale) using given resources, a set of performance tests and comparisons was made to find potential limits and breakpoints of each component. 
-Additionally, in parallel to the development of the new architecture, a dedicated documentation has been created to facilitate the set up of GoCast for lecturers or new faculties which can be found at \href{https://tumlive-docs.pages.dev/}{tumlive-docs.pages.dev}. The documentation was created using Meta Opensource's Docusaurus. Static pages were deployed using Cloudflare.
+Additionally, in parallel to the development of the new architecture, a dedicated documentation has been created to facilitate the setup of GoCast for lecturers or new faculties which can be found at \href{https://tumlive-docs.pages.dev/}{tumlive-docs.pages.dev}. The documentation was created using Meta Opensource's Docusaurus. Static pages were deployed using Cloudflare.
 All relevant source code for the thesis, new architecture, other mentioned prototypes and documentation can also be found at \href{https://github.com/carlobortolan/thesis}{github.com/carlobortolan/thesis}.
 
 \section{Proposed System}
@@ -98,7 +98,7 @@ To set up a distributed network of Workers and Runners, the first step was to up
     \caption[Example School Token]{Example School Token}\label{fig:school-token}
 \end{figure}
 
-When a maintainer starts a new Worker or Runner, he can include this token in the containers environment (e.g., via a \texttt{docker-compose.yml} file or by passing it as an argument directly to Docker using \texttt{-e Token=<...>}). When starting up, the Worker or Runner sends a requests to join the Worker or Runner pool of GoCast using the school-token and additional data (e.g., host name, IP or FQDN address, \ac{VM} workload, etc.) and - if successful - receives a token without expiration which is then used to identify all subsequent requests from and to the Worker or Runner.  
+When a maintainer starts a new Worker or Runner, he can include this token in the containers environment (e.g., via a \texttt{docker-compose.yml} file or by passing it as an argument directly to Docker using \texttt{-e Token=<...>}). When starting up, the Worker or Runner sends a request to join the Worker or Runner pool of GoCast using the school-token and additional data (e.g., host name, IP or FQDN address, \ac{VM} workload, etc.) and - if successful - receives a token without expiration which is then used to identify all subsequent requests from and to the Worker or Runner.  
 
 Maintainers can see and manage the current status of their registered resources in the Resource-Dashboard of GoCast (see \autoref{fig:resource-dashboard}).
 
@@ -137,7 +137,7 @@ When network traffic to worker nodes exceeds the available bandwidth, the archit
 
 \subsubsection{Limitaitons of GoCast's Selfstreaming}
 
-GoCast supports not just recordings from the lecture hall or manual uploads, but also so called self-streams. The idea behind self-streams is, that any lecturer can go live at any given time and stream from his own device without having to be in the lecture hall. In past, to do this, a lecturer had to go open GoCast, go to one his courses' page, select a lecture, and copy a link (such as: \texttt{rtmp://worker.example.com/cs-123? secret=5caa9d6447564cb5822995888e224f9a}) together with a secret stream key into a streaming software like OBS Studio. With the introduction of the school system there are several reasons why this can't work:
+GoCast supports not just recordings from the lecture hall or manual uploads, but also so-called self-streams. The idea behind self-streams is, that any lecturer can go live at any given time and stream from his own device without having to be in the lecture hall. In past, to do this, a lecturer had to go open GoCast, go to one his courses' page, select a lecture, and copy a link (such as: \texttt{rtmp://worker.example.com/cs-123? secret=5caa9d6447564cb5822995888e224f9a}) together with a secret stream key into a streaming software like OBS Studio. With the introduction of the school system there are several reasons why this can't work:
 
 \begin{enumerate}
     \item The URL might change depending on the availability of workers and schools.
@@ -177,7 +177,7 @@ The internal process of the RTMP-Proxy is as follows (see also \autoref{fig:rtmp
 
 \subsubsection{Architectural Challanges and Limitations with RTMP}
 
-Initially, for the prototype of the RTMP-Proxy the idea was to develop a microservice similar to the Edge Server or VOD Service written in Go that would redirect the RTMP request (similar to a HTTP 302 redirect). However, after some testing, it quickly became obvious that Go doesn't have yet libraries to handle RTMP requests with the necessary granularity. Hence, to proceed with this approach,it would require to use Go's native libraries to: 
+Initially, for the prototype of the RTMP-Proxy the idea was to develop a microservice similar to the Edge Server or VOD Service written in Go that would redirect the RTMP request (similar to a HTTP 302 redirect). However, after some testing, it quickly became obvious that Go doesn't have yet libraries to handle RTMP requests with the necessary granularity. Hence, to proceed with this approach, it would require to use Go's native libraries to: 
 \begin{itemize}
 \item Handle the incoming \ac{RTMP} request
 \item Perform a RTMP handshake
@@ -199,7 +199,7 @@ During the testing phase, it was observed that at times streaming via FFmpeg wor
     \item \textbf{Encoding Mismatch}: FFmpeg explicitly specifies H.264 for video and AAC for audio. OBS, however, may use different default codecs. The RTMP server required H.264 video, and anything else would cause a rejection.
     \item \textbf{Keyframe Interval}: RTMP servers generally expect a keyframe interval of around 2 seconds. OBS settings needed to be adjusted to enforce this interval.
     \item \textbf{Bitrate Mismatch}: High bitrate settings in OBS were causing overloads, which led to connection issues with the RTMP server. Lowering the bitrate resolved the issue.
-    \item \textbf{URL Composition}: The self-streaing URL used to call the proxy is structured like: \texttt{<protocol>://<host>:<port>/live/<stream\_key>}. OBS however, requires the URL and stream key to be set separately (see \autoref{fig:obs-rtmp}).
+    \item \textbf{URL Composition}: The self-streaming URL used to call the proxy is structured like: \texttt{<protocol>://<host>:<port>/live/<stream\_key>}. OBS however, requires the URL and stream key to be set separately (see \autoref{fig:obs-rtmp}).
 \end{itemize}
 
 This was later fixed by changing the following settings in OBS:
