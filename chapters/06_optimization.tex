@@ -83,6 +83,10 @@ When aggregating the errors by their hour and plotting them in a bar chart group
 
 Again, using data collected from various logging services and exported via GoCast's Grafana dashboard, this section will give some insights on common errors of the Worker microservice.
 
+\subsection{Errors over Time}
+
+Similarly to the main \ac{API}, the Worker logs too show a constant number of errors over time (see \autoref{fig:worker-cum-errors-over-time}) incicating that there are either bugs or network issues that continue to occur and without being solved. With an average of approximately 30 Worker-related errors per day and days with as much as 75 logged errors (see \autoref{fig:worker-upscaled-error-logs} it shows that the Worker system can become a bottleneck in the future. Especially considering that - in contrast to the main \ac{API} - there is not just one Worker deployed, but rather a few dozens, meaning that the number of erros will increase proportionally to the number of Workers deployed. 
+
 \begin{figure}[htpb]
     \centering
     \includegraphics[width=\linewidth]{images/plots/worker/cum_errors_over_time.png}
@@ -95,11 +99,29 @@ Again, using data collected from various logging services and exported via GoCas
     \caption[Upscaled Worker Error Logs]{Upscaled Worker Error Logs}\label{fig:worker-upscaled-error-logs}
 \end{figure}
 
+\subsection{The main Cause behind Worker Errors}
+
+To find out what the main issue behind the Worker errors is, it is again helpful to take a look at the most common error types (see \autoref{fig:worker-error-types}. This shows that more than 90\% of the errors have the error log \textit{"Sending Heartbeat failed"}. A Worker sends once per minute a \textit{Heartbeat} HTTP request to the main \ac{API} with its current status and workload so that the \ac{API} has a current overview of all available workers and can decide which Workers to give tasks to. This error occurs however, when a Worker tries to send such a request and the request fails because the \ac{API} is unreachable. This can either occur because the \ac{API} has become unavailable or because the Worker's \ac{VM} has a network issue. As the main \ac{API} (besides two notable outages that lead to the API being offline for a few minutes) had an uptime of 99\%, the error is most likely with the Worker system itself. 
+
+When taking a closer look at the actual logs, especially at other more critical error types that occur less often such as \textit{"Error uploading stream"}, it becomes clear that most of these errors are reported always by the two same Worker \ac{VM}s:
+
+\begin{itemize}
+    \item \texttt{labels=\{container=live\_worker..., error=Post "http://vodservice:8089": dial tcp 10.0.1.2:8089: i/o timeout, host=A, level=error, msg=Error\\ uploading stream, stream=..., time=...\}}
+
+    \item \texttt{labels=\{container=live\_worker..., error=Post "http://vodservice:8089": dial tcp 10.0.1.2:8089: i/o timeout, host=B, level=error, msg=Error\\ uploading stream, stream=..., time=...\}}
+\end{itemize}
+
+Note that for simplicity, some information has been redacted from the logs and the hosts have been renamed to \texttt{A} and \texttt{B}. However, the main point remains that it appears that the errors occur due to a timeout when trying to reach the VOD Service. As all Workers run the same on the Worker-version and on similar \ac{VM}s, and only the two Workers on host \texttt{A} and \texttt{B} report timeout error, it might be due to a misconfiguration or separate issue with the\ac{VM} itself. 
+
 \begin{figure}[htpb]
     \centering
     \includegraphics[width=\linewidth]{images/plots/worker/error_types.png}
     \caption[Worker Error Types]{Worker Error Types}\label{fig:worker-error-types}
 \end{figure}
+
+\subsection{Future Improvement: Runners}
+
+At the time of this thesis, GoCast is developing a more robust and scalable alternative to the old Worker system: The Runner. In comparison to the Worker system, which receives a task (e.g., to upload a lecture) and then performs it straightaway, the Runner system works on the basis of queues and jobs. With this, incoming tasks are not just performed resulting in either success or an error, but rather scheduled and handled internally in such a way that a task consists of multiple jobs that can be prioritized accordingly and, if failed, can be automatically retried multiple times before returning an error. Such a system would most likely solve errors such as the \textit{"Error uploading stream"} error mentioned before as the error would be handled internally and retried within certain time interval before reporting an error and aborting the task.
 
 % \begin{figure}[htpb]
 %     \centering
@@ -109,9 +131,8 @@ Again, using data collected from various logging services and exported via GoCas
 
 % Based on the collected metrics, the TUMLive Worker service was identified as a critical bottleneck. As the component responsible for encoding and uploading video streams, it often experiences high CPU and memory loads during peak usage times, leading to potential delays or errors.
 
-\section{Load Testing Edge Server and VOD Service}
-
-TODO
+% \section{Load Testing Edge Server and VOD Service}
+% TODO
 
 \section{A Technical Comparison of REST and gRPC APIs}
 
@@ -204,32 +225,34 @@ As expected, gRPC is significantly faster due to its use of Protocol Buffers and
 
     \item \textbf{Browser Compatibility}: While the lack of native browser support for gRPC might make REST a better fit, the current gRPC prototype exposes an HTTP Gateway that can be accessed just like a REST API by browser-based clients. Also, the gRPC prototype only contained "normal" endpoints, but considering the many real-time use cases that come with streaming (e.g., the live chat), gRPC’s bidirectional streaming could be a big advantage over REST.
 
-    \item \textbf{Migration Effort}: Migrating to gRPC would require a complete re-implementation from scratch of the GoCast \ac{API} with significant changes clients and infrastructure. Considering the time and resources needed for this transition, as well as experience of the developers that would have to work on this to handle gRPC and its related challenges, this might become an issue that outweighs the performance benefits.
+    \item \textbf{Migration Effort}: Migrating to gRPC would require a complete re-implementation from scratch of the GoCast \ac{API} with significant changes clients and infrastructure. While tools for REST are widely spread (e.g., Postman, cURL), the gRPC ecosystem currently has fewer options for debugging, monitoring, and testing and often requires installing additional third party add-ons to make commonly used tools compatible with gRPC. Also considering the time and resources needed for this transition, as well as experience of the developers that would have to work on this to handle gRPC and its related challenges, this might become an issue that outweighs the performance benefits.
 \end{enumerate}
 
 \section{Analysis and Limitations}
 
-Especially when it comes to comparing the different API design approaches, there additional factors that can be considered:
+Given the analyzed data and review of GoCast's codebase, some limitations have been found that could become major issues when scaling up the current system.
+
+\subsection{GoCast's In-Memory Chat System}
+
+A major limitations of GoCast is its chat system. Currently, it is implemented as a combination of TCP and WebSockets to transmit real-time updates to viewers, but saves the actual chat channels in memory. This means that if the main API would be scaled to multiple instances and two users were to connect to two separate instances their chat messages would never reach the other instance.A possible solution for this problem would be to refactor the chat system on the server-side to store the chat messages in a separate in-memory database such as \href{https://redis.io/}{Redis} or use distributed messaging services such as \href{https://github.com/nats-io/nats-server}{NATS.io}. Alternatively, it is also possible to fix this issue by always having a certain GoCast instance being responsible for a certain chat or defining a hash function that determines depending on the current number of available instances, to which instance messages of a certain stream should be posted. 
+
+\subsection{Other Factors for API Design}
+
+While the gRPC prototype showed promising results, when it comes to comparing the different API design approaches, there are additional factors that can be considered:
 
 \begin{itemize}
     \item Other Metrics:
     \begin{itemize} 
         \item \textbf{Resource Usage (CPU, Memory, Network)}
-        Compare how efficiently each API handles resources under load. gRPC, with its smaller binary payloads, may consume less bandwidth, but it may use more CPU. Network Bandwidth: Analyze network traffic to understand the differences in payload size and bandwidth usage.
+        It might be interesting to compare how efficiently each API handles resources under load. gRPC, with its smaller binary payloads, may consume less bandwidth, but may use more CPU. 
+        Also for potential bandwidth issues, network traffic could be analyzed to understand the differences in payload size and bandwidth usage.
         
         \item \textbf{Error Rates and Reliability}
-        Objective: Evaluate how both systems behave under load or failure scenarios. Does one API lead to more errors under heavy load, or can both handle the same level of traffic? Measurement: Error Rate: Percentage of failed requests during the test. Recovery Time: Time to recover from errors or failures (e.g., retries, handling transient errors).
+        In a production-like environment it could be evaluated how both systems behave under load or failure scenarios. Does one API lead to more errors under heavy load, or can both handle the same level of traffic? One could measure the error rate (=percentage of failed requests during the test) or the time to recover from errors or failures (e.g., retries, handling transient errors, etc.).
     \end{itemize}
    
     \item Qualitative Factors to Consider:
     \begin{itemize}
         \item \textbf{Ease of Integration and Development Effort}: 
-        Learning Curve: Adopting gRPC requires your development team to learn Protocol Buffers, gRPC stubs, and new tooling. Tooling and Debugging: While tools for REST are mature (e.g., Postman, cURL), the gRPC ecosystem might have fewer options for debugging, monitoring, and testing.
-        
-        \item \textbf{Compatibility and Ecosystem}
-        Browser Support: gRPC over HTTP/2 is not natively supported by browsers, which may complicate front-end integration (though gRPC-Web mitigates this). Existing Clients: Migrating existing clients (especially non-internal clients) from REST to gRPC might require significant work. REST Strength: REST is universally supported by browsers, tools, and various platforms, which makes it more flexible for front-facing APIs.
-        
-        \item \textbf{Infrastructure Costs}
-        Network and Compute: gRPC’s binary payloads can reduce bandwidth costs, especially when handling large volumes of data. However, gRPC may require more CPU resources to encode/decode Protocol Buffers compared to JSON in REST. Scaling: You may want to evaluate whether gRPC's lower latency and higher throughput translates into fewer servers needed for scaling.
-    \end{itemize}
+            \end{itemize}
 \end{itemize}
