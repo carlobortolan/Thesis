@@ -1,7 +1,7 @@
 % !TeX root = ../main.tex
 \chapter{Examples from Industry}\label{chapter:examples}
 
-This chapter gives an overview of the broad history of video streaming and then presents three aspects of video services in detail using examples from the well known video streaming services: First a look at the general system design and architecture of a streaming service, using the example of Twitch, then a look at how Netflix works together with \ac{ISPs} to deliver content as efficiently as possible, and lastly a section on how YouTube has handled different scalability challenges.     
+This chapter gives an overview of the broad history of video streaming and then presents three aspects of video services in detail using examples from the well known video streaming services: First a look at the general system design and architecture of a streaming service, using the example of Twitch, then a look at how Netflix works together with \ac{ISPs} to deliver content as efficiently as possible, and lastly a section on how YouTube has handled different scalability challenges and developed its own warehouse-scale video transcoding system.     
 
 \section{History}
 The video streaming industry has evolved dramatically over the past decades, transitioning from old fashioned technologies to highly complex, scalable infrastructures capable of delivering large amounts of content to millions of users simultaneously. The origins of video streaming can be traced back to the late 1990s and early 2000s, with the introduction of streaming technologies like RealNetworks' RealPlayer and Apple's QuickTime. These early platforms allowed users to stream audio and video content, although at low quality and with significant buffering issues due to limited bandwidth and server capacities.
@@ -97,45 +97,27 @@ Additionally, Netflix has optimized its content delivery system to handle high l
 
 \section{Example: YouTube}
 
-TODO
+YouTube, launched in 2005, is the world's largest video-sharing platform with over 500 hours of video content uploaded every minute, and approximately 694,000 hours of video content streamed per minute~\parencite{youtube_stats}.
 
-https://highscalability.com/youtube-architecture/
+\subsection{General Architecture}
 
-https://www.youtube.com/watch?v=w5WVu624fY8
+YouTube's infrastructure is built on Google's global network of data centers and \ac{CDN}s: The most popular content for a certain region is cached in global \ac{CDN}s that make sure that there are multiple copies of a video to guarantee quality of service, reliability and closeness to the user while the other videos are stored on separate servers in various locations, mainly in the US~\parencite{youtube_architecture_2}. The platform uses advanced video compression algorithms, such as VP9 and AV1, to optimize bandwidth usage while maintaining high video quality, even at lower bitrates~\parencite{youtube_vpu}. 
+In recent years, YouTube has also expanded its feature offering to include livestreaming and 360-degree videos~\parencite{youtube_live}.
 
-https://blog.youtube/news-and-events/speed-thrills-tackling-youtube-video/
+The following system design model (see \autoref{fig:youtube-system-design}) will not be explained in detail and is meant to help understand and visualize components referenced in this section~\parencite{youtube_architecture}.
 
-https://blog.youtube/news-and-events/well-do-it-livea-new-chapter-in/
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=\linewidth]{images/YoutubeSystemDesign.png}
+    \caption[YouTube System Design]{YouTube System Design}\label{fig:youtube-system-design}
+\end{figure}
 
-https://blog.youtube/inside-youtube/new-era-video-infrastructure/
 
-% YouTube, launched in 2005, is the world's largest video-sharing platform, hosting an extensive library of user-generated and professional content. The platform's ability to handle billions of video views daily and manage the upload of over 500 hours of video content every minute is a testament to its highly scalable and optimized infrastructure~\parencite{youtube_infrastructure}.
+\subsection{Scalability Challenges}
 
-% YouTube's infrastructure is built on Google's global network of data centers and CDNs, which are key to its ability to deliver content efficiently to users worldwide. By strategically placing data centers and CDN nodes around the globe, YouTube can minimize latency and ensure fast load times, regardless of the user's location~\parencite{google_cloud}. The platform uses advanced video compression algorithms, such as VP9 and AV1, to optimize bandwidth usage while maintaining high video quality, even at lower bitrates~\parencite{youtube_compression}.
 
-% One of YouTube's key technological innovations is its use of machine learning to predict user behavior and optimize content delivery. For example, YouTube pre-loads videos based on the user's watch history and preferences, reducing latency and buffering times when the user selects a video to watch~\parencite{youtube_ml}. This predictive approach allows YouTube to deliver a seamless viewing experience, even during periods of high demand.
+While there is not much information on current scalability issues published by YouTube, there are several records of problems that the YouTube team faced up to 2012. These challenges included managing rapid and unpredictable user growth with limited resources, as there was not enough budget to maintain excess machines to handle such growth. Additionally, the integration of new features such as social graphs and recommendation algorithms was especially compute-heavy for the platform. The team also pushed the limits of the hardware and software of that time, encountering limitations like performance bottlenecks in database structures before partitioning~\parencite{youtube_challenges}. As the platform continued to evolve, identifying these bottlenecks became more difficult, as they often were not due to a issue by YouTube itself, but rather by limitations of other libraries and third party software that they used~\parencite{youtube_challenges_2}.
 
-% In recent years, YouTube has also expanded its offering to include live streaming and 360-degree videos, pushing the boundaries of scalable video delivery. These formats require additional optimizations, such as increased bandwidth for live streams and specialized encoding for 360-degree videos, which YouTube has successfully implemented across its infrastructure~\parencite{youtube_live}.
-
-% Furthermore, YouTube's investment in AI-driven content moderation and recommendation systems has become increasingly important as the platform continues to grow. These systems are crucial for managing YouTube's vast and diverse content library while ensuring compliance with global regulations and maintaining user satisfaction~\parencite{youtube_ai}.
-
-% \begin{thebibliography}{99}
-% \bibitem{netflix_history} "The Evolution of Netflix: From DVD Rentals to Streaming Giant," \textit{Wired}, 2020.
-% \bibitem{ABR} Zambelli, A. "Adaptive Bitrate Streaming – Understanding the Fundamentals," \textit{Microsoft Developer Network}, 2019.
-% \bibitem{CDN} Nygren, E., Sitaraman, R., & Sun, J. "The Akamai Network: A Platform for High-Performance Internet Applications," \textit{ACM SIGOPS Operating Systems Review}, 2010.
-% \bibitem{cisco_vni} "Cisco Visual Networking Index: Forecast and Trends, 2018–2023," \textit{Cisco Systems}, 2020.
-% \bibitem{grandview_research} "Video Streaming Market Size, Share & Trends Analysis Report By Streaming Type, By Solution, By Platform, By Service, By Revenue Model, By Deployment Type, By User, By Region, And Segment Forecasts, 2023 - 2030," \textit{Grand View Research}, 2023.
-% \bibitem{youtube_stats} "YouTube for Press," \textit{YouTube Official Press Page}, 2023.
-% \bibitem{twitch_stats} "Twitch 2023 Facts and Stats," \textit{TwitchTracker}, 2023.
-% \bibitem{mobile_video} "Mobile Video 2024: Trends, Consumption, and Future Outlook," \textit{Ericsson Mobility Report}, 2024.
-% \bibitem{twitch_tech} "How Twitch Uses Technology to Scale Live Video Streaming," \textit{Twitch Engineering Blog}, 2022.
-% \bibitem{twitch_ABR} Lee, S. "The Role of Adaptive Bitrate Streaming in Twitch’s Growth," \textit{IEEE Communications Magazine}, 2021.
-% \bibitem{twitch_aws} "How Twitch Leverages AWS for Scalability," \textit{Amazon Web Services Case Study}, 2023.
-% \bibitem{twitch_monetization} "Monetization Strategies on Twitch: The Infrastructure Behind the Features," \textit{Twitch Blog}, 2023.
-% \bibitem{youtube_infrastructure} "Inside YouTube's Infrastructure: Scaling to Billions," \textit{Google Cloud Blog}, 2021.
-% \bibitem{google_cloud} "Google Cloud Networking: Delivering High-Quality Video at Scale," \textit{Google Cloud Whitepapers}, 2022.
-% \bibitem{youtube_compression} "Video Compression Techniques Used by YouTube," \textit{YouTube Engineering and Developers Blog}, 2023.
-% \bibitem{youtube_ml} "How YouTube Uses Machine Learning to Enhance User Experience," \textit{Google AI Blog}, 2023.
-% \bibitem{youtube_live} "Scaling Live Streams and 360-Degree Videos on YouTube," \textit{YouTube Creator Blog}, 2022.
-% \bibitem{youtube_ai} "AI-Driven Content Moderation on YouTube: Challenges and Innovations," \textit{Google Research}, 2024.
-% \end{thebibliography}
+\subsection{Video Acceleration at Scale}
+\ac{VCU}
+~\parencite{youtube_vpu} ~\parencite{youtube_infrastructure}
