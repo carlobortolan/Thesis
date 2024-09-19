@@ -2,15 +2,14 @@
 % !TeX root = ../main.tex
 % Add the above to each chapter to make compiling the PDF easier in some editors.
 
-\chapter{Fundamentals of TUMLive}\label{chapter:fundamentals}
+\chapter{Fundamentals of TUM-Live}\label{chapter:fundamentals}
 
 \section{GoCast Lecture Streaming Service}
 
 \subsection{Overview}
 
 GoCast is a fully self-hosted platform for live-streaming and recording of lectures, in use at the \ac{TUM} as \href{https://tum.live}{TUM-Live}.
-TUM-Live offers live and on-demand videos of lectures and events from \ac{TUM}'s \href{https://www.cit.tum.de/}{School of Computation and Technology}, mainly by the department of informatics and mathematics. 
-Its main features include:
+TUM-Live offers live and on-demand videos of lectures and events from \ac{TUM}'s \href{https://www.cit.tum.de/}{School of Computation and Technology}, mainly by the department of informatics and mathematics. The source code is open-source, accessible at \href{https://github.com/TUM-Dev/gocast}{github.com/TUM-Dev/gocast} and licensed under the MIT license. Its main features include:
 
 \begin{itemize}
     \item Fully automatic live-Streaming from Auditoriums based on lecture schedules as imported from CAMPUSonline (campus management system used at \ac{TUM}).
@@ -30,7 +29,7 @@ Its main features include:
         \item Polls can be created by lecturers.
         \item Questions can be upvoted by listeners.
         \item Questions can be marked as answered or hidden.
-        \item Optional moderation features for lecturers.
+        % \item Optional moderation features for lecturers.
     \end{itemize}
 \end{itemize}
 
@@ -47,16 +46,18 @@ Next, whenever a lecture is recorded or livestreamed, the video data is processe
 
 \subsection{User Statistics of TUM-Live}\label{subsection:user-stats-tumlive}
 
-Since its creation in February of 2021, GoCast has been used to stream thousands of hours of video every semester for more than 1300 courses, 20.000 streams and 30.000 students. The source code is open-source, accessible at \href{https://github.com/TUM-Dev/gocast}{github.com/TUM-Dev/gocast} and licensed under the MIT license.
+Since its creation in February of 2021, GoCast has been used to stream thousands of hours of video every semester for more than 1.300 courses, 20.000 streams and 30.000 students. The following plots (see \autoref{fig:tumlive-stats}) display a broad overview of viewer metrics from the current system. As the \textit{VoD activity throughout the day} plot shows, the hours at which the users watch recorded \ac{VOD}s is normally distributed, with the mean being around 4PM. Most students use TUM-Live throughout the entire lecture week (see \textit{VoD activity per day of week} plot showing an evenly distributed \ac{VOD} activity over the week), meaning that the edge servers need to fully functional at all times. At its peak, there are nearly 6.000 \ac{VOD} replays per day (see \textit{VoD activity per day}) - while at times - mostly during the semester breaks - there are weeks with nearly no \ac{VOD} activity at all.
 
 \begin{figure}[htpb]
     \centering
     \includegraphics[width=\linewidth]{images/TUMLiveStats.png}
-    \caption[TUMLive Statistics]{TUMLive Viewing Statistics}\label{fig:tumlive-stats}
+    \caption[TUM-Live Statistics]{TUM-Live Viewing Statistics}\label{fig:tumlive-stats}
 \end{figure}
+
+What's especially interesting is the development of the number of users, courses and streams over time. As can be seen in \autoref{fig:tumlive-stats-2}, at the beginning of each semester there is a clear spike in new users, created courses and streams. This is mainly due to the automatic import of lecture data and enrollments from CAMPUSonline. Between semesters, the increase in new users and courses is rather flat, with a slight increase in the number of streams (mostly streams that have been created manually).  
 
 \begin{figure}[htpb]
     \centering
-    \includegraphics[width=\linewidth]{images/course_stream_user_activity_log_plot.png}
-    \caption[Cumulative TUMLive Users, Courses and Streams over Time]{Cumulative TUMLive Users, Courses and Streams over Time}\label{fig:tumlive-stats-2}
+    \includegraphics[width=\linewidth]{images/TUMLiveStats2.png}
+    \caption[Cumulative Number of Users, Courses and Streams over Time (Log Scale)]{Cumulative Number of Users, Courses and Streams over Time (Log Scale)}\label{fig:tumlive-stats-2}
 \end{figure}

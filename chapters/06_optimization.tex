@@ -8,14 +8,14 @@ This chapter presents an insight into collected log and error metrics, a detaile
 
 \section{Monitoring Stack}
 
-The GoCast system uses a rather complex stack of monitoring, logging, and analytics tools to collect metrics. The main technologies include \href{https://github.com/grafana/grafana}{Grafana}, \href{https://github.com/prometheus/prometheus}{Prometheus}, \href{https://github.com/influxdata/telegraf}{Telegraf}, and \href{https://github.com/influxdata/influxdb}{InfluxDB}, which are deployed in a containerized environment using Docker and managed by \href{https://github.com/traefik/traefik}{Traefik} as a reverse proxy. The collected data is then organized into Grafana dashboards. The metrics collection and logging system for TUMLive is based on the following main components:
+The GoCast system uses a rather complex stack of monitoring, logging, and analytics tools to collect metrics. The main technologies include \href{https://github.com/grafana/grafana}{Grafana}, \href{https://github.com/prometheus/prometheus}{Prometheus}, \href{https://github.com/influxdata/telegraf}{Telegraf}, and \href{https://github.com/influxdata/influxdb}{InfluxDB}, which are deployed in a containerized environment using Docker and managed by \href{https://github.com/traefik/traefik}{Traefik} as a reverse proxy. The collected data is then organized into Grafana dashboards. The metrics collection and logging system for TUM-Live is based on the following main components:
 \begin{itemize}
     \item \textbf{\href{https://github.com/grafana/grafana}{Grafana}}: This is used as the main dashboard for visualizing metrics and performance logs. It connects to various data sources, such as InfluxDB, for real-time monitoring of services.
     \item \textbf{\href{https://github.com/prometheus/prometheus}{Prometheus}}: As a monitoring and alerting toolkit, Prometheus is responsible for scraping metrics from the various services within the system.
     \item \textbf{\href{https://github.com/influxdata/telegraf}{Telegraf}}: This service collects metrics and logs from Docker containers, the host system, and various applications. It works together with InfluxDB to store time-series data.
     \item \textbf{\href{https://github.com/influxdata/influxdb}{InfluxDB}}: A time-series database, InfluxDB is utilized for storing logs and metrics collected from Telegraf, which are then visualized through Grafana.
     \item \textbf{\href{https://github.com/grafana/loki}{Loki}} and \textbf{\href{https://grafana.com/docs/loki/latest/send-data/promtail/}{Promtail}}: These tools are used for centralized logging, allowing for real-time querying and log analysis through Grafana's Loki integration.
-    \item \textbf{\href{https://mariadb.org/}{MariaDB}}: Used as the primary database for storing TUMLive application data and internal user stats (see \autoref{subsection:user-stats-tumlive}).
+    \item \textbf{\href{https://mariadb.org/}{MariaDB}}: Used as the primary database for storing TUM-Live application data and internal user stats (see \autoref{subsection:user-stats-tumlive}).
 \end{itemize}
 
 \section{Metrics of the GoCast API}
@@ -129,7 +129,7 @@ At the time of this thesis, GoCast is developing a more robust and scalable alte
 %     \caption[Worker Errors by Hour]{Worker Errors by Hour}\label{fig:worker-errors-by-hour}
 % \end{figure}
 
-% Based on the collected metrics, the TUMLive Worker service was identified as a critical bottleneck. As the component responsible for encoding and uploading video streams, it often experiences high CPU and memory loads during peak usage times, leading to potential delays or errors.
+% Based on the collected metrics, the TUM-Live Worker service was identified as a critical bottleneck. As the component responsible for encoding and uploading video streams, it often experiences high CPU and memory loads during peak usage times, leading to potential delays or errors.
 
 % \section{Load Testing Edge Server and VOD Service}
 % TODO
@@ -235,6 +235,81 @@ Given the analyzed data and review of GoCast's codebase, some limitations have b
 \subsection{GoCast's In-Memory Chat System}
 
 A major limitation of GoCast is its chat system. Currently, it is implemented as a combination of TCP and WebSockets to transmit real-time updates to viewers, but saves the actual chat channels in memory. This means that if the main API would be scaled to multiple instances and two users were to connect to two separate instances their chat messages would never reach the other instance. A possible solution for this problem would be to refactor the chat system on the server-side to store the chat messages in a separate in-memory database such as \href{https://redis.io/}{Redis} or use distributed messaging services such as \href{https://github.com/nats-io/nats-server}{NATS.io}. Alternatively, it is also possible to fix this issue by always having a certain GoCast instance being responsible for a certain chat or defining a hash function that determines depending on the current number of available instances, to which instance messages of a certain stream should be posted. 
+
+\subsection{N+1 Queries}
+
+Another weakness of the current system is the N+1 query problem, which is the result of multiple database queries executed to fetch data between \ac{ORM} models. The N+1 query problem occurs when one initial query is followed by N additional queries for associated data, leading to performance degradation when N is large. In the current implementation, certain database operations, especially when retrieving courses and their associated streams or users, have this issue, as instead of creating one longer query that returns the given object and associations, first one query is retrieves the object itself and then N queries retrieve the associated objects individually. This results in a high number of queries being executed (N+1 instead of only 1) and negatively impacts performance, especially at scale.
+
+\subsubsection{Example of N+1 Problem in the Current Code:}
+
+In the current implementation of the \texttt{liveStreams} method, for each live stream retrieved by the \texttt{GetCurrentLive} query, additional queries are executed to fetch the associated course and lecture hall.
+
+\begin{enumerate}
+    \item The first query retrieves all currently live streams.
+    \item For each stream, a separate query fetches its associated course.
+    \item For each stream, an additional query fetches its associated lecture hall.
+\end{enumerate}
+\begin{figure}[htpb]
+  \begin{tabular}{c}
+  \ \small \begin{lstlisting}[language=Go]
+    // returns all streams that are live
+    func (r streamRoutes) liveStreams(c *gin.Context) {
+        streams, err := r.StreamsDao.GetCurrentLive(c)
+        // ...
+        for _, s := range streams {
+            course, err := r.CoursesDao.GetCourseById(c, s.CourseID)
+            lectureHall, err := r.LectureHallsDao.GetLectureHallByID(s.LectureHallID)
+            // ...
+    \end{lstlisting}
+  \end{tabular}
+  \label{fig:n+1-example-livestreams}
+\end{figure}
+
+This leads to N additional queries for the courses and lecture halls for each live stream, resulting in a total of 2N queries plus the initial query for fetching the streams. As we know from \autoref{subsection:user-stats-tumlive}, TUM-Live can have up to 100 active streams with more than 1.000 viewers a day, resulting in a significant number of unnecessary queries.
+
+\subsubsection{Possible Solutions:}
+
+\begin{enumerate}
+    \item \textbf{Use Preloading to Eagerly Load Associations}: By preloading the associated data (courses and lecture halls) in a single query, the number of database queries can be reduced to a minimum. For example, the \texttt{GetCurrentLive} method could be refactored to preload the \texttt{Course} and \texttt{LectureHall} fields as shown below:
+
+    \begin{figure}[htpb]
+      \begin{tabular}{c}
+      \ \small \begin{lstlisting}[language=Go]
+        func (d *StreamsDao) GetCurrentLive(ctx context.Context) ([]model.Stream, error) {
+            var streams []model.Stream
+            err := DB.Preload("Course") // eagerly load stream's course
+                     .Preload("LectureHall") // eagerly load stream's lecturehalls
+                     .Where("live_now = ?", true)
+                     .Find(&streams).Error
+            return streams, err
+        }
+      \end{lstlisting}
+      \end{tabular}
+    \end{figure}
+
+        Now, the \texttt{liveStreams} endpoint doesn't need to making additional queries for each stream:
+    
+    \begin{figure}[htpb]
+      \begin{tabular}{c}
+      \ \small \begin{lstlisting}[language=Go]
+        func (r streamRoutes) liveStreams(c *gin.Context) {
+            streams, err := r.StreamsDao.GetCurrentLive(c)
+            // ...
+            for _, s := range streams {
+                lectureHall = s.LectureHall
+                course = s.course
+                // ...
+      \end{lstlisting}
+      \end{tabular}
+    \end{figure}
+
+    \item \textbf{Batch Queries}: Instead of loading each associated object one by one, the \texttt{GetCurrentLive} method could collect all currently live stream's IDs first and then batch the queries, reducing the number of database calls.
+
+    \item \textbf{Caching}: While not particularly fitting for this example, N+1 queries can be resolved by caching frequently accessed data (with careful invalidation) to reduce overall database queries.
+
+    \item \textbf{GraphQL or DataLoader Pattern}: A more advanced solution would be to use batching mechanisms like DataLoader, often used in GraphQL environments, to batch multiple requests for related data into a single query.
+\end{enumerate}
+
 
 \subsection{Other Factors for API Design}
 

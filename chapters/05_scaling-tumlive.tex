@@ -2,9 +2,9 @@
 % !TeX root = ../main.tex
 % Add the above to each chapter to make compiling the PDF easier in some editors.
 
-\chapter{Scaling TUMLive}\label{chapter:scaling_tumlive}
+\chapter{Scaling TUM-Live}\label{chapter:scaling_tumlive}
 
-This chapter focuses on applying the concepts discussed in the previous sections to the architecture of TUMLive, discussing the development approach, results and challenges along the way. 
+This chapter focuses on applying the concepts discussed in the previous sections to the architecture of TUM-Live, discussing the development approach, results and challenges along the way. 
 
 \section{Process, Preparation, Methods and Environments}
 
@@ -26,14 +26,14 @@ All relevant source code for the thesis, new architecture, other mentioned proto
 \subsection{Target System Architecture}
 
 To distribute GoCast to different faculties, the subsystems and components responsible for processing and handling video data need to be distributed and hosted by each individual school. 
-The main Tum-Live \ac{API} instance however, will remain managed by the \ac{ITO} or TUM so that users have a single point of access (instead of having to switch instances when wanting to watch lectures of different faculties).
+The main TUM-Live \ac{API} instance however, will remain managed by the \ac{ITO} or \ac{TUM} so that users have a single point of access (instead of having to switch instances when wanting to watch lectures of different faculties).
 To achieve this, each faculty needs to host at least three components: the Runner / Worker component, the VOD Service component and an Edge Server. 
 Each school can then decide how many resources it wants to allocate to each service depending on their expected usage. The following minimum hardware requirements are set:
 
 \begin{itemize}
     \item At least 1 \ac{VM} as an Edge server. This server serves the videos to the users. Network throughput is important, so if a school serves many users, more instances are needed.
     \item At least 1 Worker or Runner \ac{VM}. This server produces the stream, transcodes the \ac{VOD} and much more. CPU performance is important here. On the same node, for every worker a VOD Service needs to be deployed to expose a simple HTTP interface that accepts file uploads and packages them to a \ac{HLS} stream in a configured location. This stream may then be distributed by the Edge Server.
-    \item Optionally, a school can add additional \ac{VM}s for monitoring (Grafana, Prometheus, Loki, etc.) or for deploying services such as the Voice Service for subtitling live streams and \ac{VOD}s using the Whisper LLM.
+    \item Optionally, a school can add additional \ac{VM}s for monitoring (Grafana, \href{https://github.com/prometheus/prometheus}{Prometheus}, \href{https://github.com/grafana/loki}{Loki}, etc.) or for deploying services such as the Voice Service for subtitling live streams and \ac{VOD}s using the Whisper LLM.
 \end{itemize}
 
 \begin{figure}[htpb]
@@ -153,7 +153,7 @@ After this initial setup, the lecturer can go live whenever they want by simply 
 \begin{figure}[htpb]
     \centering
     \includegraphics[width=\textwidth]{images/PersonalToken.png}
-    \caption[Creation of Personal Token in TUMLive and RTMP-Proxy URL]{Creation of Personal Token in TUMLive and RTMP-Proxy URL}\label{fig:personal-token}
+    \caption[Creation of Personal Token in TUM-Live and RTMP-Proxy URL]{Creation of Personal Token in TUM-Live and RTMP-Proxy URL}\label{fig:personal-token}
 \end{figure}
 
 
