@@ -72,7 +72,7 @@ Twitch's architecture is highly complex and needs to support millions of concurr
 \section{Example: Netflix}
 
 
-\subsubsection{Overview of Netflix Open Connect}
+\subsection{Overview of Netflix Open Connect}
 
 Netflix Open Connect was developed in 2011 and officially launched in 2012 as a response to the rapidly increasing scale of Netflix's streaming service~\parencite{netflix_functionality}. Before this, Netflix relied on third-party \ac{CDN}s to deliver content to its users. However, as Netflix's share of global internet traffic grew, it became evident that a custom-built \ac{CDN} could provide more efficiency and better performance adapted to Netflix's specific needs.
 The core of Netflix Open Connect is its global network of \ac{OCAs}, which are specialized servers located in over 1,000 locations around the world~\parencite{netflix_open_connect}. These \ac{OCAs} are strategically placed in \ac{ISPs}' data centers and other interconnection points, allowing Netflix to deliver content directly to users without relying heavily on the broader internet infrastructure. This reduces latency and minimizes the amount of internet backbone traffic, improving the streaming experience for users.
@@ -83,16 +83,16 @@ The core of Netflix Open Connect is its global network of \ac{OCAs}, which are s
     \caption[Netflix Open Connect Network as of 2016]{Netflix Open Connect Network as of 2016}\label{fig:netflix-isp}
 \end{figure}
 
-\subsubsection{Content Delivery Mechanism}
+\subsection{Content Delivery Mechanism}
 
 Netflix's content delivery strategy involves pre-positioning content on \ac{OCAs} before users request it. This is achieved through advanced predictive algorithms that analyze content popularity, to make sure that the most likely to be watched content is already stored close to where it will be consumed~\parencite{netflix_cloud}. For example, in regions with limited internet capacity, such as Australia, Netflix minimizes the use of undersea cables by pre-loading content onto \ac{OCAs} during off-peak hours, reducing the need for real-time content transmission over these expensive and bandwidth-limited connections.
 
 Netflix also uses consistent hashing to distribute content across multiple servers within a cluster, for balancing workloads and minimizing server churn when the cluster's composition changes~\parencite{netflix_content_distribution}. An example of how this works is the following: Assuming \textit{n} servers, every server ID (\textit{S1} to \textit{Sn}) is hashed 1000 times to generate a reasonably equal distribution of content and also to facilitate fair re-hashing when the cluster changes. Using the uniform consistent hashing approach, then the same weight is assigned to every server.
 For heterogeneous server clusters, which consist of servers with varying storage and throughput capacities, Netflix created a 'Heterogeneous Cluster Allocation' algorithm that allocates content based on both the storage and throughput capacities of individual servers, reducing content holes and improving load balance in clusters that were already heterogeneous~\parencite{netflix_content_distribution}.
 
-\subsubsection{Performance Optimization and Energy Efficiency}
+\subsection{Performance Optimization and Energy Efficiency}
 
-Over the years, Netflix has continuously optimized its Open Connect Appliances, increasing their efficiency by an order of magnitude since the inception of the program. For instance, the throughput of a single server has been increased from 8 Gbps in 2012 to over 90 Gbps in 2016, largely due to improvements in both hardware and software~\parencite{netflix_open_connect}. These advancements have also led to smaller and more power-efficient \ac{OCAs}.
+Over the years, Netflix has continuously optimized its \ac{OCAs}, increasing their efficiency by an order of magnitude since the inception of the program. For instance, the throughput of a single server has been increased from 8 Gbps in 2012 to over 90 Gbps in 2016, largely due to improvements in both hardware and software~\parencite{netflix_open_connect}. These advancements have also led to smaller and more power-efficient \ac{OCAs}.
 Additionally, Netflix has optimized its content delivery system to handle high levels of encrypted traffic efficiently. Using hardware acceleration and optimizing memory bandwidth usage, Netflix has reached the capability to serve 100 Gbps of encrypted traffic on its modern \ac{OCAs}~\parencite{netflix_content_serving}.
 
 \section{Example: YouTube}
@@ -115,9 +115,30 @@ The following system design model (see \autoref{fig:youtube-system-design}) will
 
 \subsection{Scalability Challenges}
 
-
 While there is not much information on current scalability issues published by YouTube, there are several records of problems that the YouTube team faced up to 2012. These challenges included managing rapid and unpredictable user growth with limited resources, as there was not enough budget to maintain excess machines to handle such growth. Additionally, the integration of new features such as social graphs and recommendation algorithms was especially compute-heavy for the platform. The team also pushed the limits of the hardware and software of that time, encountering limitations like performance bottlenecks in database structures before partitioning~\parencite{youtube_challenges}. As the platform continued to evolve, identifying these bottlenecks became more difficult, as they often were not due to a issue by YouTube itself, but rather by limitations of other libraries and third party software that they used~\parencite{youtube_challenges_2}.
 
 \subsection{Video Acceleration at Scale}
-\ac{VCU}
-~\parencite{youtube_vpu} ~\parencite{youtube_infrastructure}
+
+With Moore's Law slowing down, specialized hardware accelerators optimized for large-scale video transcoding are needed to meet demand for video processing. 
+In 2021, the YouTube team presented an accelerator called the \ac{VCU} and showed that by scaling it within Google data centers, it achieved 20-33x improved efficiency compared to the previous well-tuned non-accelerated systems (see \autoref{tab:youtube-vcu})~\parencite{youtube_infrastructure}.
+
+\begin{table}[h!]
+\centering
+\caption{Throughput and Performance Comparison of Systems}\label{tab:youtube-vcu}
+\begin{tabular}{|l|cc|cc|}
+\hline
+\textbf{System}      & \multicolumn{2}{c|}{\textbf{Throughput [Mpix/s]}} & \multicolumn{2}{c|}{\textbf{Perf/TCO}}    \\ \hline
+            & \multicolumn{1}{c|}{H.264}       & VP9       & \multicolumn{1}{c|}{H.264} & VP9 \\ \hline
+Skylake     & \multicolumn{1}{c|}{714}            & 154           & \multicolumn{1}{c|}{1.0x}      & 1.0x     \\ \hline
+4xNvidia T4 & \multicolumn{1}{c|}{2,484}          & --            & \multicolumn{1}{c|}{1.5x}      & --       \\ \hline
+8xVCU       & \multicolumn{1}{c|}{5,973}          & 6,122         & \multicolumn{1}{c|}{4.4x}      & \textbf{20.8x}    \\ \hline
+20xVCU      & \multicolumn{1}{c|}{14,932}         & 15,306        & \multicolumn{1}{c|}{7.0x}      & \textbf{33.3x}    \\ \hline
+\end{tabular}
+\end{table}
+
+The core component of the \ac{VCU} system is the encoder core, which serves as a hardware accelerator built for large distributed clusters and works in three stages: 1. \href{https://en.wikipedia.org/wiki/Macroblock}{\textit{Block-based video encoding}} (most memory and bandwidth intensive stage), 2. \href{https://en.wikipedia.org/wiki/Entropy_coding}{\textit{entropy encoding}} and 3. \textit{\href{https://www.kernel.org/doc/html/latest/gpu/afbc.html}{loop filtering and lossless frame buffer compression}}. 
+While the \ac{VCU} design optimizes for throughput, system balance and programmability, allowing it to adapt to changing workloads and infrastructure demands, its major challenges are handling multiple resolutions and formats and ensuring system reliability in a large-scale environment~\parencite{youtube_vpu}.
+Also, the \ac{VCU} integrates multiple encoder cores and a memory system optimized for data center workloads and can be adjusted dynamically. This hardware-software co-design approach helps efficiently transcode uploaded videos while being flexible for future workloads. The system is highly parallelized, allowing for efficient handling of multi-output transcoding where a single input video is processed into multiple resolutions and formats at the same time~\parencite{youtube_vpu}.
+
+Given the fact that the \ac{VCU} system enables otherwise infeasible VP9 compression, this results in new use cases related to livestreaming (e.g., using VP9 to encode many short (2-second) segments in parallel to increase overall throughput). \blockquote{\textit{As a concrete example, a 2-second 1080p chunk could be encoded in 10 seconds, the encoding system would transcode 5-6 chunks concurrently to achieve the needed throughput of a 1 video-sec/second}}~\parencite{youtube_vpu}.
+Currenty, this system is mainly used by YouTube for a wide range of video workloads, including video sharing, live streaming and cloud gaming. 

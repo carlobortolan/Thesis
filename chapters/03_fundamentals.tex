@@ -12,7 +12,7 @@ GoCast is a fully self-hosted platform for live-streaming and recording of lectu
 TUM-Live offers live and on-demand videos of lectures and events from \ac{TUM}'s \href{https://www.cit.tum.de/}{School of Computation and Technology}, mainly by the department of informatics and mathematics. The source code is open-source, accessible at \href{https://github.com/TUM-Dev/gocast}{github.com/TUM-Dev/gocast} and licensed under the MIT license. Its main features include:
 
 \begin{itemize}
-    \item Fully automatic live-Streaming from Auditoriums based on lecture schedules as imported from CAMPUSonline (campus management system used at \ac{TUM}).
+    \item Automatic live-streaming from auditoriums based on lecture schedules imported from CAMPUSonline (campus management system used at \ac{TUM} as TUMOnline).
     \item Self-service interface for lecturers to schedule and manage their \ac{VOD}s and streams.
     \item Automated import of lecture schedules and enrollments from CAMPUSonline.
     \item Self-streaming via third party streaming software such as \href{https://obsproject.com/}{OBS}, \href{https://zoom.us}{Zoom}, etc.
@@ -35,7 +35,7 @@ TUM-Live offers live and on-demand videos of lectures and events from \ac{TUM}'s
 
 \subsection{Current System Architecture}
 
-At the core of the GoCast system, there is the main \ac{API} built on the \href{https://github.com/gin-gonic/gin}{Gin-Gonic} Framework and connected to a \href{https://mariadb.org/}{MariaDB} Database. Its main functionality is to manage users, courses, streams, pull events from CAMPUSonline and scheduling tasks. For user authentication, it uses the provided services of \ac{TUM}'s \ac{SSO} and \ac{LDAP} to allow users to authenticate themselves with their university credentials. 
+At the core of the GoCast system, there is the main \ac{API} built on the \href{https://github.com/gin-gonic/gin}{Gin-Gonic} Framework and connected to a \href{https://mariadb.org/}{MariaDB} Database. Its main functionality is to manage users, courses, streams, pull events from CAMPUSonline and schedule tasks. For user authentication, it uses the provided services of \ac{TUM}'s \ac{SSO} and \ac{SAML} to allow users to authenticate themselves with their university credentials. 
 Next, whenever a lecture is recorded or livestreamed, the video data is processed by a TUM-Live Worker which then transcodes and segments the video into MPEG-2 compressed video transport stream files. These segments are then copied to a shared storage using the VOD Service component so that they can then later be distributed by the Edge Server.
 
 \begin{figure}[htpb]
@@ -46,7 +46,7 @@ Next, whenever a lecture is recorded or livestreamed, the video data is processe
 
 \subsection{User Statistics of TUM-Live}\label{subsection:user-stats-tumlive}
 
-Since its creation in February of 2021, GoCast has been used to stream thousands of hours of video every semester for more than 1,300 courses, 20,000 streams and 30,000 students. The following plots (see \autoref{fig:tumlive-stats}) display a broad overview of viewer metrics from the current system. As the \textit{VoD activity throughout the day} plot shows, the hours at which the users watch recorded \ac{VOD}s is normally distributed, with the mean being around 4PM. Most students use TUM-Live throughout the entire lecture week (see \textit{VoD activity per day of week} plot showing an evenly distributed \ac{VOD} activity over the week), meaning that the edge servers need to fully functional at all times. At its peak, there are nearly 6,000 \ac{VOD} replays per day (see \textit{VoD activity per day}) - while at times - mostly during the semester breaks - there are weeks with nearly no \ac{VOD} activity at all.
+Since its creation in February of 2021, GoCast has been used to stream thousands of hours of video every semester for more than 1,300 courses, 20,000 streams and 30,000 students. The following plots (see \autoref{fig:tumlive-stats}) display a broad overview of viewer metrics from the current system. As the \textit{VoD activity throughout the day} plot shows, the hours at which the users watch recorded \ac{VOD}s is normally distributed, with the mean being around 4PM. Most students use TUM-Live throughout the entire lecture week (see \textit{VoD activity per day of week} plot showing an evenly distributed \ac{VOD} activity over the week), meaning that the Edge Servers need to fully functional at all times. At its peak, there are nearly 6,000 \ac{VOD} replays per day (see \textit{VoD activity per day}) - while at times - mostly during the semester breaks - there are weeks with nearly no \ac{VOD} activity at all.
 
 \begin{figure}[htpb]
     \centering

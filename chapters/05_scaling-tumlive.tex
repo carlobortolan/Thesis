@@ -18,7 +18,7 @@ To develop and test the prototype of a distributed architecture for TUM-Live for
 \end{itemize}
 
 After the target architecture had been deployed (on a smaller scale) using given resources, a set of performance tests and comparisons was made to find potential limits and breakpoints of each component. 
-Additionally, in parallel to the development of the new architecture, a dedicated documentation has been created to facilitate the setup of GoCast for lecturers or new faculties which can be found at \href{https://tumlive-docs.pages.dev/}{tumlive-docs.pages.dev}. The documentation was created using Meta Opensource's Docusaurus. Static pages were deployed using Cloudflare.
+Additionally, in parallel to the development of the new architecture, a dedicated documentation has been created to facilitate the setup of GoCast for lecturers or new faculties which can be found at \href{https://tumlive-docs.pages.dev/}{tumlive-docs.pages.dev}. The documentation was created using Meta Opensource's \href{https://github.com/facebook/docusaurus}{Docusaurus}. Static pages were deployed using Cloudflare.
 All relevant source code for the thesis, new architecture, other mentioned prototypes and documentation can also be found at \href{https://github.com/carlobortolan/thesis}{github.com/carlobortolan/thesis}.
 
 \section{Proposed System}
@@ -31,9 +31,9 @@ To achieve this, each faculty needs to host at least three components: the Runne
 Each school can then decide how many resources it wants to allocate to each service depending on their expected usage. The following minimum hardware requirements are set:
 
 \begin{itemize}
-    \item At least 1 \ac{VM} as an Edge server. This server serves the videos to the users. Network throughput is important, so if a school serves many users, more instances are needed.
-    \item At least 1 Worker or Runner \ac{VM}. This server produces the stream, transcodes the \ac{VOD} and much more. CPU performance is important here. On the same node, for every worker a VOD Service needs to be deployed to expose a simple HTTP interface that accepts file uploads and packages them to a \ac{HLS} stream in a configured location. This stream may then be distributed by the Edge Server.
-    \item Optionally, a school can add additional \ac{VM}s for monitoring (Grafana, \href{https://github.com/prometheus/prometheus}{Prometheus}, \href{https://github.com/grafana/loki}{Loki}, etc.) or for deploying services such as the Voice Service for subtitling live streams and \ac{VOD}s using the Whisper LLM.
+    \item At least 1 \ac{VM} as an Edge Server. This server serves the videos to the users. Network throughput is important, so if a school serves many users, more instances are needed.
+    \item At least 1 Worker or Runner \ac{VM}. This server produces the stream and transcodes the \ac{VOD} which is why CPU performance is important here. On the same node, for every Worker a VOD Service needs to be deployed to expose a simple HTTP interface that accepts file uploads and packages them to a \ac{HLS} stream in a configured location. This stream may then be distributed by the Edge Server.
+    \item Optionally, a school can add additional \ac{VM}s for monitoring (\href{https://github.com/grafana/grafana}{Grafana}, \href{https://github.com/prometheus/prometheus}{Prometheus}, \href{https://github.com/grafana/loki}{Loki}, etc.) or for deploying services such as the Voice Service for subtitling live streams and \ac{VOD}s using the \href{https://github.com/openai/whisper}{Whisper LLM}.
 \end{itemize}
 
 \begin{figure}[htpb]
@@ -54,7 +54,7 @@ Given the proposed system design, this section documents how this system has bee
 Initially, GoCast was used primarily by the former faculty of Informatics at TUM. However, with increasing demand, GoCast needs to be extended for university-wide lecture streaming. The solution to this are schools (not to be confused with TUMOnline's 'TUMOnline School').
 
 The first step of implementing this structure was updating GoCast's role system. Previously, it contained four roles: \texttt{admin}, \texttt{lecturer}, \texttt{student}, \texttt{visitor}. While users with the admin role can manage over the entire system (e.g., create and delete lectures and users, as well as perform maintenance tasks), lecturers can only manage their own lectures and students only manage their own profile and preferences. However, with the introduction of schools, this is not sufficient, as each school needs to have own school-scoped admins that can manage over their schools' resources without being able to interfere with other schools. To do this, a new \texttt{maintainer}-role has been introduced (see \autoref{fig:school-hierarchy}).
-With this, a school using GoCast is managed by a set of maintainers of this school. A user with the maintainer role can be maintainer of multiple schools, and has also maintainer rights for all sub-schools of his schools.  
+With this, a school using GoCast is managed by a set of maintainers of this school. A user with the \texttt{maintainer}-role can be maintainer of multiple schools, and has also maintainer rights for all sub-schools of his schools.  
 Maintainers also have some basic administrative functionality which is limited to their schools' scope (e.g., create, update and delete courses and streams only for those schools which are administered by that maintainer). 
 
 \subsection{TUMOnline School vs. GoCast School}
@@ -65,8 +65,8 @@ TUMOnline has a strict hierarchical structure for its organizations (one school 
 While GoCast is mainly used by the TUM, in principle it doesn't need to differentiate between organizational types that strictly. Organizations are only relevant when it comes to distributing the livestreams and recordings of a certain entity to that entity's resources (e.g., Workers/Runners and VOD Services). Hence, the introduction of GoCast's "schools" which represent an entity responsible for processing data. In practice, this is most of the time a TUMOnline school, however, one can also create a GoCast "school" for a department, chair or smaller organization which is subordinated to another organization, depending on the specific situation.
 
 Here's an example to illustrate this in a more detailed way:
-The TUMOnline "School of Management" (SOM) wants to start using GoCast. Hence, the SOM's IT team contacts the admins of GoCast who then create a new GoCast "school" TUM School and assign the SOM IT team as maintainers.
-The subordinated "Chair of Financial Management and Capital Markets" (FA), however, has its own data center and wants to host its lectures with its own resources. In this case, either one of the SOM maintainers or the RBG can create a new GoCast "school" as a child of the SOM school and accordingly assign new maintainers from the FA-team. Now, the the FA-maintainers have full control over their sub-school and can connect their own resources from their data center with GoCast, independently of the SOM.
+The TUMOnline "School of Management" (SOM) wants to start using GoCast. Hence, the SOM's IT team contacts the admins of GoCast who then create a new \textit{SOM school} in GoCast and assign the SOM IT team as maintainers.
+The subordinated "Chair of Financial Management and Capital Markets" (FA), however, has its own data center and wants to host its lectures with its own resources. In this case, either one of the SOM maintainers or the RBG can create a new GoCast "school" as a sub-school of the \textit{SOM school} and accordingly assign new maintainers from the FA-team. Now, the the FA-maintainers have full control over their sub-school and can connect their own resources from their data center with GoCast, independently of the SOM.
 
 % The idea is the following: To avoid one entity having to manage and process all streaming data for the entire university (or multiple universities), GoCast is distributed to multiple entities. Each entity (aka GoCast 'school') has so-called maintainers (users with the maintainer user role) that are allowed to manage the school's resources such as Workers/Runners, VOD Services, etc.
 
@@ -108,7 +108,7 @@ Maintainers can see and manage the current status of their registered resources 
     \caption[Resources Dashboard]{Resources Dashboard}\label{fig:resource-dashboard}
 \end{figure}
 
-Now, whenever a new lecture is being recorded or uploaded, the main GoCast \ac{API} selects an available worker for this school and addresses it given the host name and IP address that the worker has registered when first connecting to GoCast. For more details on how the distribution of tasks works, see \autoref{section:shared-resources}.
+Now, whenever a new lecture is being recorded or uploaded, the main GoCast \ac{API} selects an available Worker for this school and addresses it given the host name and IP address that the Worker has registered when first connecting to GoCast. For more details on how the distribution of tasks works, see \autoref{section:shared-resources}.
 
 When the Worker or Runner receives such a request, it initiates the video transcoding process using FFmpeg. The transcoding is performed based on the specific stream version (e.g., \texttt{CAM}, \texttt{PRES} or \texttt{COMB}), adjusting parameters like compression level and priority (niceness) accordingly. The process is monitored in real-time, with progress being reported back to the GoCast system, ensuring that any issues are retried with backoff strategies and that the final transcoded video meets the expected duration and quality standards.
 
@@ -121,7 +121,7 @@ Additionally, the Edge Server acts as a local cache for the school's content. Wh
 
 The dependency on Workers or Runners for transcoding means that the efficiency and speed of the VOD Service and Edge Server setup depend on the availability and performance of these services. Therefore, it is necessary that a school has enough Workers or Runners to support the number of recorded lectures.
 If a school has many concurrent viewers, it might need to consider having multiple Edge Servers running, as they have a limited bandwidth. %and can only serve approximately xxx.
-When network traffic to worker nodes exceeds the available bandwidth, the architecture might look like the example shown in \autoref{fig:edge-network}.
+When network traffic to Worker nodes exceeds the available bandwidth, the architecture might look like the example shown in \autoref{fig:edge-network}.
 
 \begin{figure}[htpb]
     \centering
@@ -140,14 +140,14 @@ When network traffic to worker nodes exceeds the available bandwidth, the archit
 GoCast supports not just recordings from the lecture hall or manual uploads, but also so-called self-streams. The idea behind self-streams is, that any lecturer can go live at any given time and stream from his own device without having to be in the lecture hall. In past, to do this, a lecturer had to go open GoCast, go to one his courses' page, select a lecture, and copy a link (such as: \texttt{rtmp://worker.example.com/cs-123? secret=5caa9d6447564cb5822995888e224f9a}) together with a secret stream key into a streaming software like OBS Studio. With the introduction of the school system there are several reasons why this can't work:
 
 \begin{enumerate}
-    \item The URL might change depending on the availability of workers and schools.
+    \item The URL might change depending on the availability of Workers and schools.
     \item Having to copy and paste a new URL every time a lecturer wants to start a stream can become annoying.
     \item For lecturers who teach at multiple schools (e.g., the Chair of Databases and the Chair of Bioinformatics), managing different URLs for each school would be inconvenient.
 \end{enumerate}
 
 \subsubsection{Proposed Solution and Data-Flow}
 
-The solution for this is the RTMP-Proxy microservice. In a nutshell, the RTMP-Proxy acts as a router-like service that accepts all \ac{RTMP} self-stream requests and redirects them accordingly. With this, all a lecturer has to do is creating a new personal token (see \autoref{fig:personal-token}) and copy the token together with the target URL of the RTPM-Proxy into a streaming software only once.
+The solution for this is the RTMP-Proxy microservice. In a nutshell, the RTMP-Proxy acts as a router-like service that accepts all \ac{RTMP} self-stream requests and redirects them accordingly. With this, all a lecturer has to do is creating a new personal token (see \autoref{fig:personal-token}) and copy the token together with the target URL of the RTMP-Proxy into a streaming software only once.
 After this initial setup, the lecturer can go live whenever they want by simply using the pre-configured URL and token.
 
 \begin{figure}[htpb]
@@ -163,10 +163,10 @@ The internal process of the RTMP-Proxy is as follows (see also \autoref{fig:rtmp
     \item An incoming \ac{RTMP} request is received:\\
     \texttt{rtmp://proxy.example.com/live/<personal-token>}.
     \item The RTMP-Proxy sends a self-stream request to the main GoCast \ac{API} with the provided \texttt{personal-token}.
-    \item The GoCast \ac{API} validates the \texttt{personal-token} and uses it to detect whether the lecturer has a scheduled lecture for the current time slot or a soon upcoming lecture and automatically starts the live-stream preview for viewers. Then it checks the stream's course's school and returns the \ac{RTMP} URL of the ingest worker currently available for that school together with the course-slug and secret stream key for this stream: \\ 
+    \item The GoCast \ac{API} validates the \texttt{personal-token} and uses it to detect whether the lecturer has a scheduled lecture for the current time slot or a soon upcoming lecture and automatically starts the live-stream preview for viewers. Then it checks the stream's course's school and returns the \ac{RTMP} URL of the ingest Worker currently available for that school together with the course-slug and secret stream key for this stream: \\ 
     \texttt{rtmp://worker.example.com/<course-slug>?secret=<secret>/<secretKey>}.
     \item The RTMP-Proxy redirects the \ac{RTMP} request to the retrieved \ac{RTMP} URL.
-    \item The school's ingest worker know receives the proxied \ac{RTMP} request as if it were sent directly to it by the lecturers streaming software.
+    \item The school's ingest Worker know receives the proxied \ac{RTMP} request as if it were sent directly to it by the lecturers streaming software.
 \end{enumerate}
 
 \begin{figure}[htpb]
@@ -177,11 +177,11 @@ The internal process of the RTMP-Proxy is as follows (see also \autoref{fig:rtmp
 
 \subsubsection{Architectural Challanges and Limitations with RTMP}
 
-Initially, for the prototype of the RTMP-Proxy the idea was to develop a microservice similar to the Edge Server or VOD Service written in Go that would redirect the RTMP request (similar to a HTTP 302 redirect). However, after some testing, it quickly became obvious that Go doesn't have yet libraries to handle RTMP requests with the necessary granularity. Hence, to proceed with this approach, it would require to use Go's native libraries to: 
+Initially, for the prototype of the RTMP-Proxy the idea was to develop a microservice similar to the Edge Server or VOD Service written in Go that would redirect the \ac{RTMP} request (similar to a HTTP 302 redirect). However, after some testing, it quickly became obvious that Go doesn't have yet libraries to handle \ac{RTMP} requests with the necessary granularity. Hence, to proceed with this approach, it would require to use Go's native libraries to: 
 \begin{itemize}
 \item Handle the incoming \ac{RTMP} request
-\item Perform a RTMP handshake
-\item Extract the user token from the RTMP request
+\item Perform a \ac{RTMP} handshake
+\item Extract the user token from the \ac{RTMP} request
 \item Find out the destination address
 \item Establish a connection with the destination host
 \item Streaming the video chunks directly to the destination address
@@ -190,25 +190,25 @@ Initially, for the prototype of the RTMP-Proxy the idea was to develop a microse
 This might work short term, but on the long term it would lead to other problems with potential bugs, scalability issues, complex error handling and unknown security vulnerabilities if not properly maintained.
 
 A better solution was to use the \href{https://github.com/arut/nginx-rtmp-module}{nginx-rtmp-module}. This module extends Nginx to handle \ac{RTMP} streaming requests natively, making it a more stable solution~\parencite{nginx_rtmp_module}. 
-Now, whenever a stream request arrives at the proxy server, Nginx intercepts the request and invokes a script that extracts the stream key (the path token) and requests the actual destination URL from the GoCast \ac{API}. Upon receiving the destination URL, Nginx dynamically pushes the stream to the target server.
+Now, whenever a stream request arrives at the proxy server, Nginx intercepts the request and invokes a script that extracts the stream key (the personal token) and requests the actual destination URL from the GoCast \ac{API}. Upon receiving the destination URL, Nginx dynamically pushes the stream to the target server.
 
 \subsubsection{Implementation Details: FFmpeg vs OBS Compatibility}
 
 During the testing phase, it was observed that at times streaming via FFmpeg worked perfectly fine, while attempts using OBS failed:
 \begin{itemize}
-    \item \textbf{Encoding Mismatch}: FFmpeg explicitly specifies H.264 for video and AAC for audio. OBS, however, may use different default codecs. The RTMP server required H.264 video, and anything else would cause a rejection.
-    \item \textbf{Keyframe Interval}: RTMP servers generally expect a keyframe interval of around 2 seconds. OBS settings needed to be adjusted to enforce this interval.
-    \item \textbf{Bitrate Mismatch}: High bitrate settings in OBS were causing overloads, which led to connection issues with the RTMP server. Lowering the bitrate resolved the issue.
+    \item \textbf{Encoding Mismatch}: FFmpeg explicitly specifies H.264 for video and AAC for audio. OBS, however, may use different default codecs. The \ac{RTMP} server required H.264 video, and anything else would cause a rejection.
+    \item \textbf{Keyframe Interval}: \ac{RTMP} servers generally expect a keyframe interval of around 2 seconds. OBS settings needed to be adjusted to enforce this interval.
+    \item \textbf{Bitrate Mismatch}: High bitrate settings in OBS were causing overloads, which led to connection issues with the \ac{RTMP} server. Lowering the bitrate resolved the issue.
     \item \textbf{URL Composition}: The self-streaming URL used to call the proxy is structured like: \texttt{<protocol>://<host>:<port>/live/<stream\_key>}. OBS however, requires the URL and stream key to be set separately (see \autoref{fig:obs-rtmp}).
 \end{itemize}
 
-This was later fixed by changing the following settings in OBS:
-\begin{itemize}
-    \item Set the video encoder to \texttt{x264} (H.264).
-    \item Set the audio encoder to \texttt{AAC}.
-    \item Adjust the bitrate to a more reasonable level, matching what was tested with FFmpeg.
-    \item Set the keyframe interval to 2 seconds for better compatibility with the nginx \ac{RTMP} server.
-\end{itemize}
+\begin{figure}[htpb]
+    \centering
+    \includegraphics[width=\linewidth]{images/OBSRTMP.png}
+    \caption[OBS Settings for self-streaming]{OBS Settings for self-streaming}\label{fig:obs-rtmp}
+\end{figure}
+
+This was later fixed by changing the settings in OBS and setting the video encoder to \texttt{x264} (H.264), the audio encoder to \texttt{AAC}, adjusting the bitrate to a more reasonable level and settings the keyframe interval to 2 seconds for better compatibility with the Nginx \ac{RTMP} server.
 
 \subsubsection{Final Words on Scaling the RTMP-Proxy}
 
@@ -291,7 +291,7 @@ The following are four approaches considered for the decision algorithm behind t
                 if worker != nil {
                     worker.assignTask(task)
                 } else {
-                    taskQueue.enqueue(task) // Requeue task if no workers are available
+                    taskQueue.enqueue(task) // Requeue task if no Workers are available
                     wait(some-time)
                 }
             }
@@ -370,21 +370,21 @@ Given the objective function and the constraints, the solution to the \ac{LP} ca
         from gurobipy import Model, GRB, quicksum
         model = Model("Minimize_Max_Load")
         
-        # Decision variables: x[i, j] = 1 if task i is assigned to worker j, 0 otherwise
+        # Decision variables: x[i, j] = 1 if task i is assigned to Worker j, 0 otherwise
         x = model.addVars(n, m, vtype=GRB.BINARY, name="x")
         
-        # Variable for maximum load across all workers
+        # Variable for maximum load across all Workers
         L_max = model.addVar(vtype=GRB.CONTINUOUS, name="L_max")
         
         # Objective: Minimize the maximum load L_max
         model.setObjective(L_max, GRB.MINIMIZE)
         
-        # Constraint 3.a) Each task is assigned to exactly one worker
+        # Constraint 3.a) Each task is assigned to exactly one Worker
         for i in range(n):
             model.addConstr(
                 quicksum(x[i, j] for j in range(m)) == 1, name=f"Task_Assignment_{i}")
         
-        # Constraint 3.b) and 3.c) Load on each worker does't exceed L_max
+        # Constraint 3.b) and 3.c) Load on each Worker does't exceed L_max
         for j in range(m):
             model.addConstr(
                 quicksum(t[i] * x[i, j] for i in range(n)) <= L_max, 
