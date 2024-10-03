@@ -4,4 +4,12 @@
 
 \chapter{Introduction}\label{chapter:introduction}
 
-How can the existing infrastructure behind video streaming services such as TUM-Live be optimized and scaled while maintaining reliability, stability and high streaming quality?
+In recent years, the demand for video streaming has grown at an unprecedented rate, driven by platforms like YouTube, Netflix and Twitch, which have fundamentally transformed how people consume and share content globally. This exponential rise in viewership, combined with an increasingly broad range of devices, network conditions, user expectations and costs to be able to maintain such platforms has made the challenge of scalability and optimization one of the most critical areas in the field of distributed systems. Central to this challenge is the ability to balance computational resources, dynamically distribute streams and develop new hardware and software optimizations to provide a solid viewing experience to users in real-time.
+
+GoCast, developed by students at \ac{TUM} and currently in use at the \ac{CIT} as TUM-Live is a perfect example of such a streaming service. With plans to expand it to other \ac{TUM} schools and the potential for university-wide lecture streaming, there is a need of analyzing and updating the current system to handle distributed resources and distribute both the processing and storage of lecture streams as well as administrative tasks to the individual schools to reduce the load on the central servers and administrators.
+
+We start with a chapter on its history and milestones over the years, using examples from three well known video streaming services that display the general architecture, challenges and optimization potentials in this industry. Next, there is a chapter on TUM-Live, explaining its architecture and current state, which is followed by an overview of the technological concepts behind streaming services, supported by related literature.  
+
+In the second half we will focus exclusively on TUM-Live, showing a proposed solution that has been developed over the last few months to scale its architecture to support multiple organizations. This will be supported by a detailed analysis of the updated and newly designed systems and possible improvements and limitations. Finally, for the last part we will take a look at solutions to optimize the current system with regard to common errors and how they are handled, as well as an optimization approach for database queries and a comparison of different \ac{API} designs.    
+
+In short, this thesis aims to answer the question of how existing infrastructure behind video streaming services such as TUM-Live can be optimized and scaled while maintaining reliability, stability and high streaming quality.

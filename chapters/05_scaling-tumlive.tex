@@ -8,7 +8,7 @@ This chapter focuses on applying the concepts discussed in the previous sections
 
 \section{Process, Preparation, Methods and Environments}
 
-The thesis spanned 5 months, from 15.05.2024 to \getSubmissionDate{}. The first weeks were spent familiarizing with the current system considering different approaches to scale its architecture and finding potential bottlenecks or issues. Following the initial analysis of the system, before being able to try scaling individual components, the original user and role system first needed to be updated together with new database models. After that, the most important components were gradually updated to be usable and manageable by each school. 
+The thesis spanned 5 months, from 15.05.2024 to \getSubmissionDate{}. The first weeks were spent familiarizing with the current system considering different approaches to scale its architecture and finding potential bottlenecks or issues. Following the initial analysis of the system, before being able to try scaling individual components, the original user and role system first needed to be updated together with new database models. After that, the most important components were gradually updated to be usable and manageable by different organizations. 
 To develop and test the prototype of a distributed architecture for TUM-Live for this thesis, the following resources were used:
 \begin{itemize}
     \item 3 \ac{VM}s with: 2 GB RAM, Intel(R) Xeon(R) CPU E5-2697A v4 @ 2.60GHz
@@ -23,35 +23,49 @@ All relevant source code for the thesis, new architecture, other mentioned proto
 
 \section{Proposed System}
 
+As explained in \autoref{section:tum-live-history}, to use TUM-Live, currently each lecture hall needs to be equipped with a \ac{SMP} device which can cost up to 10,000 EUR. With the creation of the \ac{VMP}, which costs only around 500 EUR per device, there is the demand of scaling TUM-Live to other \ac{TUM} schools and possibly other universities. However, currently this is not possible for the following reasons: 
+
+1. \textbf{High maintenance} (not enough human resources to provide a central support);
+
+2. \textbf{TUM-Live can only be centrally hosted};
+
+3. \textbf{No support for multiple organizations};
+
+4. \textbf{“Flat” user structure} (no way to enforce ownership rules over lectures, users, etc.);
+
+5. \textbf{Complex and not user-friendly features} (e.g., self streaming).
+
+\noindent The following sections will explain a proposal to solve all five issues (see also \autoref{fig:system-architecture}) and scale TUM-Live to handle lectures from other organizations.
+
 \subsection{Target System Architecture}
 
-To distribute TUM-Live to different schools and universities, the subsystems and components responsible for processing and handling video data need to be distributed and hosted by each individual school. 
-The main TUM-Live \ac{API} instance however, will remain managed by the \ac{CIT} \ac{ITO} or \ac{TUM} so that users have a single point of access instead of having to switch instances when wanting to watch lectures of different schools.
-To achieve this, each school needs to host at least three components: the Worker component, the VOD Service component and an Edge Server. 
-Each school can then decide how many resources it wants to allocate to each service depending on their expected usage. The following minimum requirements are set:
-
-\begin{itemize}
-    \item At least 1 \ac{VM} as an Edge Server. This server serves the videos to the users. Network throughput is important, so if a school serves many users, more instances are needed.
-    \item At least 1 Worker \ac{VM}. This server receives the stream and transcodes the \ac{VOD} which is why CPU performance is important here. On the same node, for every Worker a VOD Service needs to be deployed to expose a simple HTTP interface that accepts file uploads and packages them to a \ac{HLS} stream in a configured location. This stream may then be distributed by the Edge Server.
-    \item Optionally, a school can add additional \ac{VM}s for monitoring (\href{https://github.com/grafana/grafana}{Grafana}\footnote{\url{https://github.com/grafana/grafana}}, \href{https://github.com/prometheus/prometheus}{Prometheus}\footnote{\url{https://github.com/prometheus/prometheus}}, \href{https://github.com/grafana/loki}{Loki}\footnote{\url{https://github.com/grafana/loki}}, etc.) or for deploying services such as the Voice Service for subtitling live streams and \ac{VOD}s using the \href{https://github.com/openai/whisper}{Whisper LLM}\footnote{\url{https://github.com/openai/whisper}}.
-\end{itemize}
-
-\begin{figure}[htpb]
+\begin{figure}[htbp]
     \centering
     \includegraphics[width=400pt]{images/DeploymentDiagramNew.png}
-    \caption[Target System Architecture]{Target Deployment Diagram of TUM-Live\footnote{}}
+    \caption[Target Deployment Diagram of TUM-Live]{Target Deployment Diagram of TUM-Live\footnotemark[5]}
     \label{fig:system-architecture}
 \end{figure}
-\footnotetext{In comparison to a \textit{System Architecture Model} (e.g., \autoref{fig:twitch-architecture} or \autoref{fig:system-architecture}), a \textit{Deployment Diagram} shows a concrete instance of an abstract system architecture}
-\break
+
+To distribute TUM-Live to different schools and universities, the subsystems and components responsible for processing and storing video data need to be distributed and hosted by each individual organization. 
+The main TUM-Live \ac{API} instance however, will remain managed by the \ac{CIT} \ac{ITO} or \ac{TUM} so that users have a single point of access instead of having to switch instances when wanting to watch lectures of different schools.
+To achieve this, each organization needs to host at least three components: the Worker component, the VOD Service component and an Edge Server. 
+Each organization can decide how many resources it wants to allocate to each service depending on the expected load. The following minimum requirements are set:
+
+\begin{itemize}
+    \item At least 1 \ac{VM} as an Edge Server. This server serves the videos to the users. Throughput is important, so, to serve many users, more instances are needed.
+    \item At least 1 Worker \ac{VM} to receive the stream and transcode the \ac{VOD}. On the same node, for every Worker a VOD Service needs to be deployed to expose a simple HTTP interface that accepts file uploads and packages them to a \ac{HLS} stream in a configured location. This stream may then be distributed by the Edge Server.
+    \item Optionally, an organization can add additional \ac{VM}s for monitoring (\href{https://github.com/grafana/grafana}{Grafana}\footnote{\url{https://github.com/grafana/grafana}}, \href{https://github.com/prometheus/prometheus}{Prometheus}\footnote{\url{https://github.com/prometheus/prometheus}}, etc.) or for deploying services such as the Voice Service for subtitling live streams and \ac{VOD}s using the \href{https://github.com/openai/whisper}{Whisper LLM}\footnote{\url{https://github.com/openai/whisper}}.
+\end{itemize}
+
+\footnotetext[5]{In comparison to a \textit{System Architecture Model} (e.g., \autoref{fig:twitch-architecture} or \autoref{fig:system-architecture}), a \textit{Deployment Diagram} shows a concrete instance of an abstract system architecture.}
 
 \section{Delegated Administration of Resources}\label{section:rbac}
 
-Given the proposed system design, this section documents how this system has been implemented and what the current limitations and potential improvements of the main user system are. 
+Given the proposed system (see \autoref{fig:system-architecture}), this section documents how this system has been implemented and what the current limitations and potential improvements of the main user system are. 
 
 \subsection{Updating Architecture and Core API}
 
-Initially, GoCast was used as TUM-Live primarily by the former faculty of informatics at \ac{TUM}. However, with increasing demand, as explained before, GoCast needs to be extended for university-wide lecture streaming. The solution to this are \textbf{organizations} that allow for delegated partial administration of resources.
+As explained before, with increasing demand, GoCast needs to be extended for university-wide lecture streaming. The solution to this are \textbf{organizations} that allow for delegated partial administration of resources.
 
 The first step of implementing this structure was updating GoCast's role system. Previously, it contained four roles: \texttt{admin}, \texttt{lecturer}, \texttt{student}, \texttt{visitor}. While admins can manage the entire system (e.g., create and delete lectures and users, as well as perform maintenance tasks), lecturers can only manage own or create new lectures and students only manage their own profile and preferences. However, with the introduction of organizations, this is not sufficient, as each organization needs to have own organization-scoped admins that can manage their organizations' resources without being able to interfere with other organizations. To do this, a new \texttt{maintainer} role has been introduced (see \autoref{fig:school-hierarchy}).
 With this, an organization using GoCast is managed by a set of maintainers of this organization. A user with the \texttt{maintainer}-role can be maintainer of multiple organizations, and has also maintainer rights for all sub-organizations of his organizations.  
@@ -108,8 +122,10 @@ When a maintainer starts a new Worker, he can include this token in the containe
 
 Now, whenever a new lecture is being received or uploaded, the main GoCast \ac{API} selects an available Worker for this organization and addresses it given the host name and IP address that the Worker has registered when first connecting to GoCast. For more details on how the distribution of tasks works, see \autoref{section:shared-resources}.
 
-When the Worker receives such a request, it initiates the video transcoding process using \href{https://ffmpeg.org/}{FFmpeg}. The transcoding is performed based on the specific stream version\footnote{\texttt{CAM} streams use a higher compression level (CRF 26) and lower priority (niceness 10), while \texttt{PRES} streams use lower compression (CRF 20) and higher priority (niceness 9), with specific tuning in FFmpeg for still images in presentations. \texttt{COMB} streams, are assigned moderate compression (CRF 24) and the highest priority (niceness 8).}. 
+When the Worker receives such a request, it initiates the video transcoding process using \href{https://ffmpeg.org/}{FFmpeg}. The transcoding is performed based on the specific stream version\footnotemark[6]. 
 The process is monitored in real-time, with progress being reported back to the GoCast system, to ensure that any failed actions are retried with backoff strategies and that the final transcoded video meets the expected duration and quality standards.
+
+\footnotetext[6]{\texttt{CAM} streams use a higher compression level (CRF 26) and lower priority (niceness 10), while \texttt{PRES} streams use lower compression (CRF 20) and higher priority (niceness 9), with specific tuning in FFmpeg for still images in presentations. \texttt{COMB} streams, are assigned moderate compression (CRF 24) and the highest priority (niceness 8).}
 
 \subsection{VOD Service and Edge Server}
 
@@ -186,9 +202,9 @@ Initially, for the prototype of the RTMP-Proxy the idea was to develop a microse
 \item Streaming the video chunks directly to the destination address
 \end{itemize}
 
-This might work short term, but in the long term it would lead to other problems with potential bugs, scalability issues, complex error handling and unknown security vulnerabilities if not properly maintained.
+\noindent This might work short term, but in the long term it would lead to other problems with potential bugs, scalability issues, complex error handling and unknown security vulnerabilities if not properly maintained.
 
-A better solution was to use the \href{https://github.com/arut/nginx-rtmp-module}{nginx-rtmp-module}\footnote{\url{https://github.com/arut/nginx-rtmp-module}} that extends Nginx to handle \ac{RTMP} streaming requests natively~\parencite{nginx_rtmp_module}. 
+A better solution was to use the \href{https://github.com/arut/nginx-rtmp-module}{nginx-rtmp-module}\footnotemark[7]\footnotetext[7]{\url{https://github.com/arut/nginx-rtmp-module}} that extends Nginx to handle \ac{RTMP} streaming requests natively~\parencite{nginx_rtmp_module}. 
 Now, whenever a stream request arrives at the proxy server, Nginx accepts the request and invokes a script that extracts the stream key (the personal token) and requests the actual destination URL from the GoCast \ac{API}. Upon receiving the destination URL, Nginx pushes the stream to the target server.
 
 \subsubsection{Implementation Details: FFmpeg vs OBS Compatibility}
@@ -254,21 +270,23 @@ The following are four approaches considered for the decision algorithm behind t
     
     % \item \textbf{Recursive Organization-Based Allocation:}  
 \subsubsection{2. Recursive Organization-Based Allocation}
-    When a task (i.e. a video upload) is started, the system recursively checks for available resources, starting from the organization's own resources and moving up the hierarchy to include parent organizations and shared resources as described in the previous subsection. This guarantees that each task is allocated to the most appropriate resource, improving resource utilization across the network by allowing sub-organizations to benefit from the resources of their parent organizations, while respecting the resource ownership of each organization.
+    When a task is started, the system recursively checks for available resources, starting from the organization's own resources and moving up the hierarchy to include parent organizations and shared resources as described in the previous subsection. This guarantees that each task is allocated to the most appropriate resource, improving resource utilization across the network by allowing sub-organizations to benefit from the resources of their parent organizations, while respecting the resource ownership of each organization. One could implement different optimizations such as prioritizing own resources before shared resources or limit how many levels the query should follow the parent-child relationship upwards. Also, one organization might not want to use resources shared by other organizations and therefore include only resources from its own organization's hierarchy. The code snippet below is an example of how a recursive query might look like to find all available Workers in an organization's hierarchy including shared Workers.   
 
     \begin{figure}[htpb]
       \begin{tabular}{c}
       \ \small \begin{lstlisting}[language=SQL]
         -- 2. Recursive organization-based allocation example query
+        -- First, create a recursive query to follow the parent-child hiarachy upward
         WITH RECURSIVE org_hierarchy AS (
             SELECT id, parent_id FROM orgs WHERE id = ?
             UNION ALL
             SELECT o.id, o.parent_id FROM orgs o
-            INNER JOIN org_hierarchy oh ON o.id = oh.parent_id
-        )
+            INNER JOIN org_hierarchy oh ON o.id = oh.parent_id 
+        ) 
+        -- Then, select all Workers that are in the hiararchy or shared
         SELECT w.* FROM workers w
-        INNER JOIN org_hierarchy oh ON oh.id = w.org_id
-        WHERE w.last_seen > NOW() - INTERVAL 5 MINUTE OR w.shared = true;
+        LEFT JOIN org_hierarchy oh ON oh.id = w.org_id
+        WHERE oh.id IS NOT NULL OR w.shared = true;
         \end{lstlisting}
       \end{tabular}
       \label{fig:recursive-allocation}
@@ -276,7 +294,7 @@ The following are four approaches considered for the decision algorithm behind t
 
     % \item \textbf{Priority-Based Allocation:}  
 \subsubsection{3. Priority-Based Allocation}
-    Assign tasks to Workers based on a dynamically adjusted priority queue. The tasks would be prioritized based on factors such as viewer count, failure rate, \ac{VM} workload or the type of content being processed. For example, live streaming tasks could be given a higher priority over \ac{VOD} uploads and hence be processed by a Worker that runs on a more powerful \ac{VM}. This approach would assign critical tasks (e.g., live streaming) first, and re-schedule less urgent tasks (e.g., \ac{VOD} uploads or thumbnail generation) for a later point in time.
+    Tasks are assigned to Workers based on a dynamically adjusted priority queue. The tasks would be prioritized based on factors such as viewer count, failure rate, \ac{VM} workload or the type of content being processed. For example, live streaming tasks could be given a higher priority over \ac{VOD} uploads and hence be processed by a Worker that runs on a more powerful \ac{VM}. This approach would assign critical tasks (e.g., live streaming) first, and re-schedule less urgent tasks (e.g., \ac{VOD} uploads or thumbnail generation) for later. The example below shows one possible implementation of the selection process assuming that the \texttt{taskQueue} contains tasks sorted by priority. 
 
     \begin{figure}[htpb]
       \begin{tabular}{c}
@@ -284,14 +302,12 @@ The following are four approaches considered for the decision algorithm behind t
         // 3. Priority-based allocation pseudocode
         function processTaskQueue(taskQueue) {
             while not taskQueue.isEmpty() {
-                task = taskQueue.dequeue()
-                worker := getNextAvailableWorker()
-                
+                task = taskQueue.dequeue() // Get task with highest priority
+                worker := getNextAvailableWorker() // Find available Worker
                 if worker != nil {
                     worker.assignTask(task)
                 } else {
                     taskQueue.enqueue(task) // Requeue task if no Workers are available
-                    wait(some-time)
                 }
             }
         }

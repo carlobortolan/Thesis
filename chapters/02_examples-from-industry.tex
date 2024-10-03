@@ -23,11 +23,11 @@ Additionally, the introduction of \ac{ABR} streaming allowed platforms to dynami
 \section{Example: Twitch}
 Twitch, which launched in 2011 as a spin-off from the general-interest streaming platform Justin.tv, has become synonymous with live streaming, particularly within the gaming community. Its popularity can be explained by its ability to deliver high-quality, low-latency streams to millions of users simultaneously. 
 One of the most significant challenges Twitch faces is the need to manage vast amounts of user-generated content in real-time and scale with high fluctuations in viewer numbers, particularly during major events like e-sports competitions.
-Twitch's architecture is highly complex and needs to support millions of concurrent video streams, real-time interactions through chat, and extensive data processing. In the following, there is a detailed breakdown of the key components of its architecture (see also \autoref{fig:twitch-architecture}):
+Twitch's architecture is highly complex and needs to support millions of concurrent video streams, real-time interactions through chat, and extensive data processing such as predictive modeling for personalized recommendations, spam detection for chat messages, and targeted campaigns based on in-app user behavior~\parencite{twitch_analytics}. In the following, there is a detailed breakdown of the key components of its architecture (see also \autoref{fig:twitch-architecture}):
 
 \begin{figure}[htpb]
     \centering
-    \includegraphics[width=\linewidth]{images/TwitchArchitecture.png}
+    \includegraphics[width=\linewidth]{images/TwitchArchitectureNew.png}
     \caption[System Architecture of Twitch]{System Architecture of Twitch}\label{fig:twitch-architecture}
 \end{figure}
 
@@ -41,7 +41,7 @@ Twitch's architecture is highly complex and needs to support millions of concurr
 
     The chat system is a real-time distributed system, primarily written in Go, and designed to handle real-time interaction between viewers and streamers. The \textbf{Edge} component of the chat system is responsible for receiving and distributing messages between clients and backend services. It supports the \ac{IRC} protocol over both raw TCP and WebSockets, which allows for broad compatibility, including the integration of third-party \ac{IRC} bots.
     
-    Next, the \textbf{Pubsub} subsystem is used for the internal distribution of chat messages across various edge nodes. Together, they create a hierarchical message distribution system capable of executing massive fanout, ensuring that all participants in a chat room receive messages promptly and reliably. The \textbf{Clue} component handles the application of business logic to chat interactions. For instance, it checks if a user is banned from a channel, whether they are a subscriber, or if they are exhibiting abusive behavior. Clue achieves this by aggregating data from various sources, including databases, internal \ac{API}s, and caches, to make real-time decisions. Finally, the \textbf{Room} component manages the viewer list for each chat room. It aggregates, stores, and queries membership data across all Edge nodes to provide accurate and up-to-date viewer lists, which are crucial for both moderation and user interaction~\parencite{twitch_chat}.
+    Next, the \textbf{Pubsub} subsystem is used for the internal distribution of chat messages across various Edge nodes. Together, they create a hierarchical message distribution system capable of executing massive fanout, to guarantee that all users in a chat room receive messages quickly and reliably. The \textbf{Clue} component handles the application of business logic to these chat interactions. For example, it authorizes the user's message by checking if they are banned from a channel, whether they are a subscriber or if they are showing abusive behavior. Clue achieves this by accepting messages forwarded by the Edge nodes and then aggregating data from various databases, internal \ac{API}s, and caches. Using this data, it then evaluate the viewers' messages against existing rules in real-time. Finally, the \textbf{Room} component manages the viewer list for each chat room. It aggregates, stores and queries membership data across all Edge nodes to provide accurate and up-to-date viewer lists, which are crucial for both moderation and user interaction~\parencite{twitch_chat}.
 
     \item \textbf{Web \ac{API}s and Data}
 

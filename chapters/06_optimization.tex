@@ -57,7 +57,7 @@ The errors are not logged with a specific error type, but they contain a JSON St
   \caption[Example \ac{API} Error JSON]{Example \ac{API} Error JSON}\label{fig:api-error-json}
 \end{figure}
 
-As seen in \autoref{fig:api-error-types}, the most common error logged by the \ac{API} was \textit{'Could not generate live preview'} with 677 occurrences. To understand this error, first it is necessary to explain that GoCast allows admins to trigger certain cron jobs which then periodically perform a certain action such as importing course-assignments from CAMPUSonline, or in this case - fetching the thumbnails of live streams (Live Previews) from the GoCast Workers. Hence, this error is a result of the \texttt{FetchLivePreviews} cron job which is performed every minute to get a live thumbnail from a Worker. If this request returns an error, it logs the  ends the connection and decrements the Worker's workload. Possible reasons for this could be network issues preventing the communication with the Worker, general Worker unavailability, or invalid or incomplete parameters passed to the \texttt{getLivePreviewFromWorker} function.
+\noindent As seen in \autoref{fig:api-error-types}, the most common error logged by the \ac{API} was \textit{'Could not generate live preview'} with 677 occurrences. To understand this error, first it is necessary to explain that GoCast allows admins to trigger certain cron jobs which then periodically perform a certain action such as importing course-assignments from CAMPUSonline, or in this case - fetching the thumbnails of live streams (Live Previews) from the GoCast Workers. Hence, this error is a result of the \texttt{FetchLivePreviews} cron job which is performed every minute to get a live thumbnail from a Worker. If this request returns an error, it logs the  ends the connection and decrements the Worker's workload. Possible reasons for this could be network issues preventing the communication with the Worker, general Worker unavailability, or invalid or incomplete parameters passed to the \texttt{getLivePreviewFromWorker} function.
 
 \begin{figure}[htpb]
     \centering
@@ -65,7 +65,8 @@ As seen in \autoref{fig:api-error-types}, the most common error logged by the \a
     \caption[\ac{API} Error Types]{\ac{API} Error Types}\label{fig:api-error-types}
 \end{figure}
 \break
-When aggregating the errors by their hour and plotting them in a bar chart grouped by error type (\autoref{fig:api-errors-by-hour-and-type}), there's an interesting observation that the \textit{'Could not generate live preview'} error, which is the most common error, mainly occurs during normal lecture times from 6AM to 5PM. As the number of reported occurrences of this error is constant over these hours, it can be assumed that it is either an issue with an individual Worker that might have a connection issue or is running an outdated docker image (the log data does not provide information on which \ac{VM} the error occurred), or a bug that affects all Workers. However, since we know that the \ac{API} fetches the previews once every minute from all Workers, and the number of errors per hour is around 60, it is most likely an issue with one individual Worker. If the issue was a random connection error, the number of occurrences should vary significantly and if the issue was a system-wide misconfiguration or bug in the Worker microservice, the error should occur on all Workers, meaning that the number of errors should be: \texttt{number of Workers * 60}.     
+
+\noindent When aggregating the errors by their hour and plotting them in a bar chart grouped by error type (\autoref{fig:api-errors-by-hour-and-type}), there's an interesting observation that the \textit{'Could not generate live preview'} error, which is the most common error, mainly occurs during normal lecture times from 6AM to 5PM. As the number of reported occurrences of this error is constant over these hours, it can be assumed that it is either an issue with an individual Worker that might have a connection issue or is running an outdated docker image (the log data does not provide information on which \ac{VM} the error occurred), or a bug that affects all Workers. However, since we know that the \ac{API} fetches the previews once every minute from all Workers, and the number of errors per hour is around 60, it is most likely an issue with one individual Worker. If the issue was a random connection error, the number of occurrences should vary significantly and if the issue was a system-wide misconfiguration or bug in the Worker microservice, the error should occur on all Workers, meaning that the number of errors should be: \texttt{number of Workers * 60}.     
 
 \begin{figure}[htpb]
     \centering
@@ -102,7 +103,6 @@ Similarly to the main \ac{API}, the Worker logs too show a constant number of er
 \subsection{The Main Cause Behind Worker Errors}
 
 To find out what the main issue behind the Worker errors is, it is again helpful to take a look at the most common error types (see \autoref{fig:worker-error-types}). This shows that more than 90\% of the errors have the error log \textit{"Sending Heartbeat failed"}. A Worker sends a \textit{Heartbeat} HTTP request once per minute to the main \ac{API} with its current status and workload so the \ac{API} has a current overview of all available Workers and can decide which Workers to give tasks to. This error occurs however, when a Worker tries to send such a request and the request fails because the \ac{API} is unreachable. This can either occur because the \ac{API} has become unavailable or because the Worker's \ac{VM} has a network issue. As the main \ac{API} (besides two notable outages that lead to the \ac{API} being offline for a few minutes) had an uptime of 99\%, the error is most likely with the Worker system itself. 
-
 When taking a closer look at the actual logs, especially at other more critical error types that occur less often such as \textit{"Error uploading stream"}, it becomes clear that most of these errors are reported always by the two same Worker \ac{VM}s:
 
 \begin{itemize}
@@ -191,7 +191,7 @@ Max & 150 & 150 \\ \hline
 \end{tabular}
 \end{table}
 
-To evaluate whether gRPC provides significant enough benefits, the focus was on collecting and analyzing the following metrics:
+\noindent To evaluate whether gRPC provides significant enough benefits, the focus was on collecting and analyzing the following metrics:
 
 \begin{itemize}
     \item 
@@ -266,7 +266,7 @@ In the \texttt{liveStreams} method, for each live stream retrieved by the \textt
     \item For each stream, an additional query fetches its associated lecture hall.
 \end{enumerate}
 
-This leads to N additional queries for the courses and lecture halls for each live stream, resulting in a total of 2N queries plus one initial query for fetching the streams. As we know from \autoref{subsection:user-stats-tumlive}, TUM-Live can have up to 100 active streams with more than 1,000 viewers a day, resulting in a significant number of unnecessary queries.
+\noindent This leads to N additional queries for the courses and lecture halls for each live stream, resulting in a total of 2N queries plus one initial query for fetching the streams. As we know from \autoref{subsection:user-stats-tumlive}, TUM-Live can have up to 100 active streams with more than 1,000 viewers a day, resulting in a significant number of unnecessary queries.
 
 \subsubsection{Possible Solutions:}
 
