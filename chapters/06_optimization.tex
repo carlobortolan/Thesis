@@ -10,17 +10,17 @@ This chapter presents an insight into collected log and error metrics, a detaile
 
 The GoCast system uses a rather complex stack of monitoring, logging, and analytics tools to collect metrics. The main technologies include \href{https://github.com/grafana/grafana}{Grafana}, \href{https://github.com/prometheus/prometheus}{Prometheus}, \href{https://github.com/influxdata/telegraf}{Telegraf}, and \href{https://github.com/influxdata/influxdb}{InfluxDB}, which are deployed in a containerized environment using Docker and managed by \href{https://github.com/traefik/traefik}{Traefik} as a reverse proxy. The collected data is then organized into Grafana dashboards. The metrics collection and logging system for TUM-Live is based on the following main components:
 \begin{itemize}
-    \item \textbf{\href{https://github.com/grafana/grafana}{Grafana}}: This is used as the main dashboard for visualizing metrics and performance logs. It connects to various data sources, such as InfluxDB, for real-time monitoring of services.
-    \item \textbf{\href{https://github.com/prometheus/prometheus}{Prometheus}}: As a monitoring and alerting toolkit, Prometheus is responsible for scraping metrics from the various services within the system.
-    \item \textbf{\href{https://github.com/influxdata/telegraf}{Telegraf}}: This service collects metrics and logs from Docker containers, the host system, and various applications. It works together with InfluxDB to store time-series data.
-    \item \textbf{\href{https://github.com/influxdata/influxdb}{InfluxDB}}: A time-series database, InfluxDB is utilized for storing logs and metrics collected from Telegraf, which are then visualized through Grafana.
-    \item \textbf{\href{https://github.com/grafana/loki}{Loki}} and \textbf{\href{https://grafana.com/docs/loki/latest/send-data/promtail/}{Promtail}}: These tools are used for centralized logging, allowing for real-time querying and log analysis through Grafana's Loki integration.
-    \item \textbf{\href{https://mariadb.org/}{MariaDB}}: Used as the primary database for storing TUM-Live application data and internal user stats (see \autoref{subsection:user-stats-tumlive}).
+    \item \textbf{\href{https://github.com/grafana/grafana}{Grafana}}\footnote{\url{https://github.com/grafana/grafana}}: This is used as the main dashboard for visualizing metrics and performance of connected services in real-time.
+    \item \textbf{\href{https://github.com/prometheus/prometheus}{Prometheus}}\footnote{\url{https://github.com/prometheus/prometheus}}: As a monitoring and alerting toolkit, Prometheus is responsible for scraping metrics from the various services within the system.
+    \item \textbf{\href{https://github.com/influxdata/telegraf}{Telegraf}}\footnote{\url{https://github.com/influxdata/telegraf}}: Collects metrics and logs from Docker containers, the host system, and various applications. It works together with InfluxDB to store time-series data.
+    \item \textbf{\href{https://github.com/influxdata/influxdb}{InfluxDB}}\footnote{\url{https://github.com/influxdata/influxdb}}: A time-series database, InfluxDB is utilized for storing logs and metrics collected from Telegraf, which are then visualized through Grafana.
+    \item \textbf{\href{https://github.com/grafana/loki}{Loki}} and \textbf{\href{https://grafana.com/docs/loki/latest/send-data/promtail/}{Promtail}}\footnote{\url{https://github.com/grafana/loki}}: These tools are used for centralized logging, allowing for real-time querying and log analysis through Grafana's Loki integration.
+    % \item \textbf{\href{https://mariadb.org/}{MariaDB}}: Used as the primary database for storing TUM-Live application data and internal user stats (see \autoref{subsection:user-stats-tumlive}).
 \end{itemize}
 
 \section{Metrics of the GoCast API}
 
-The main data source for the GoCast \ac{API} were Loki and Traefik as well as internal server logs. This section will give some insights on common errors and patterns found in the main \ac{API} and (given the limited amount of logging data) focus on two main aspects: The number of errors and the observed errors types. The Python scripts for the plots for this and the following sections be found at \href{https://github.com/carlobortolan/thesis/tree/analytics}{github.com/carlobortolan/thesis/analytics}.
+The main data source for the GoCast \ac{API} are Loki and Traefik as well as internal server logs. This section will give some insights on common errors and patterns found in the main \ac{API} and (given the limited amount of logging data) focus on two main aspects: The number of errors and the observed errors types. The Python scripts for the plots for this and the following sections be found at \href{https://github.com/carlobortolan/thesis/tree/analytics}{github.com/carlobortolan/thesis/analytics}.
 
 \subsection{Error Volume Analysis}
 
@@ -40,7 +40,7 @@ Plotting the logged errors of the \ac{API} over time (see \autoref{fig:api-cum-e
 
 \subsection{Categorization of Error Types}
 
-The errors aren't logged with a specific error type, but they contain a JSON String from which one can infer the origin of the error (e.g., see \autoref{fig:api-error-json}).
+The errors are not logged with a specific error type, but they contain a JSON String from which one can infer the origin of the error (e.g., see \autoref{fig:api-error-json}).
 
 \begin{figure}[htpb]
   \begin{tabular}{c}
@@ -57,15 +57,15 @@ The errors aren't logged with a specific error type, but they contain a JSON Str
   \caption[Example \ac{API} Error JSON]{Example \ac{API} Error JSON}\label{fig:api-error-json}
 \end{figure}
 
-As seen in \autoref{fig:api-error-types}, the most common error logged by the \ac{API} was \textit{'Could not generate live preview'} with 677 occurrences. To understand this error, first it is necessary to explain that GoCast allows admins to trigger certain cron jobs which then periodically perform a certain action such as importing courses from CAMPUSonline, or in this case - fetching the thumbnails of livestreams (Live Previews) from the GoCast Workers. Hence, this error is a result of the \texttt{FetchLivePreviews} cron job which is performed every minute to get a live thumbnail from a Worker. If this request returns an error, it logs the  ends the connection and decrements the Worker's workload. Possible reasons for this could be network issues preventing the communication with the Worker, general Worker unavailability, or invalid or incomplete parameters passed to the \texttt{getLivePreviewFromWorker} function.
+As seen in \autoref{fig:api-error-types}, the most common error logged by the \ac{API} was \textit{'Could not generate live preview'} with 677 occurrences. To understand this error, first it is necessary to explain that GoCast allows admins to trigger certain cron jobs which then periodically perform a certain action such as importing course-assignments from CAMPUSonline, or in this case - fetching the thumbnails of live streams (Live Previews) from the GoCast Workers. Hence, this error is a result of the \texttt{FetchLivePreviews} cron job which is performed every minute to get a live thumbnail from a Worker. If this request returns an error, it logs the  ends the connection and decrements the Worker's workload. Possible reasons for this could be network issues preventing the communication with the Worker, general Worker unavailability, or invalid or incomplete parameters passed to the \texttt{getLivePreviewFromWorker} function.
 
 \begin{figure}[htpb]
     \centering
     \includegraphics[width=\linewidth]{images/plots/api/error_types.png}
     \caption[\ac{API} Error Types]{\ac{API} Error Types}\label{fig:api-error-types}
 \end{figure}
-
-When aggregating the errors by their hour and plotting them in a bar chart grouped by error type (\autoref{fig:api-errors-by-hour-and-type}), there's an interesting observation that the \textit{'Could not generate live preview'} error, which is the most common error, mainly occurs during normal lecture times from 6AM to 5PM. As the number of reported occurrences of this error is constant over these hours, it can be assumed that it is either an issue with an individual Worker that might have a connection issue or is running an outdated docker image (the log data doesn't provide information on which \ac{VM} the error occurred), or a bug that affects all Workers. However, since we know that the \ac{API} fetches the previews once every minute from all Workers, and the number of errors per hour is around 60, it is most likely an issue with one individual Worker. If the issue was a random connection error, the number of occurrences should vary significantly and if the issue was a system-wide misconfiguration or bug in the Worker microservice, the error should occur on all Workers, meaning that the number of errors should be: \texttt{number of Workers * 60}.     
+\break
+When aggregating the errors by their hour and plotting them in a bar chart grouped by error type (\autoref{fig:api-errors-by-hour-and-type}), there's an interesting observation that the \textit{'Could not generate live preview'} error, which is the most common error, mainly occurs during normal lecture times from 6AM to 5PM. As the number of reported occurrences of this error is constant over these hours, it can be assumed that it is either an issue with an individual Worker that might have a connection issue or is running an outdated docker image (the log data does not provide information on which \ac{VM} the error occurred), or a bug that affects all Workers. However, since we know that the \ac{API} fetches the previews once every minute from all Workers, and the number of errors per hour is around 60, it is most likely an issue with one individual Worker. If the issue was a random connection error, the number of occurrences should vary significantly and if the issue was a system-wide misconfiguration or bug in the Worker microservice, the error should occur on all Workers, meaning that the number of errors should be: \texttt{number of Workers * 60}.     
 
 \begin{figure}[htpb]
     \centering
@@ -81,11 +81,11 @@ When aggregating the errors by their hour and plotting them in a bar chart group
 
 \section{Performance Bottleneck: Worker}
 
-Again, using data collected from various logging services and exported via GoCast's Grafana dashboard, this section will give some insights on common errors of the Worker microservice.
+Again, using data collected from various logging services and exported via GoCast's Grafana dashboard, this section will give some insights on common errors of the Worker microservice and try to find possible causes as well as potential solutions to either avoid these errors or make it easier to debug them in the future.  
 
 \subsection{Errors over Time}
 
-Similarly to the main \ac{API}, the Worker logs too show a constant number of errors over time (see \autoref{fig:worker-cum-errors-over-time}) indicating that there are either bugs or network issues that continue to occur and without being solved. With an average of approximately 30 Worker-related errors per day and days with as much as 75 logged errors (see \autoref{fig:worker-upscaled-error-logs} it shows that the Worker system can become a bottleneck in the future. Especially considering that - in contrast to the main \ac{API} - there is not just one Worker deployed, but rather a few dozens, meaning that the number of errors will increase proportionally to the number of Workers deployed. 
+Similarly to the main \ac{API}, the Worker logs too show a constant number of errors over time (see \autoref{fig:worker-cum-errors-over-time}) indicating that there are either bugs or network issues that continue to occur without being solved. With an average of approximately 30 Worker-related errors per day and days with as much as 75 logged errors (see \autoref{fig:worker-upscaled-error-logs} it shows that the Worker system can become a bottleneck in the future. Especially considering that - in contrast to the main \ac{API} - there is not just one Worker deployed, but rather a few dozens, meaning that the number of errors will increase proportionally to the number of Workers deployed. 
 
 \begin{figure}[htpb]
     \centering
@@ -99,9 +99,9 @@ Similarly to the main \ac{API}, the Worker logs too show a constant number of er
     \caption[Upscaled Worker Error Logs]{Upscaled Worker Error Logs}\label{fig:worker-upscaled-error-logs}
 \end{figure}
 
-\subsection{The main Cause behind Worker Errors}
+\subsection{The Main Cause Behind Worker Errors}
 
-To find out what the main issue behind the Worker errors is, it is again helpful to take a look at the most common error types (see \autoref{fig:worker-error-types}). This shows that more than 90\% of the errors have the error log \textit{"Sending Heartbeat failed"}. A Worker sends once per minute a \textit{Heartbeat} HTTP request to the main \ac{API} with its current status and workload so that the \ac{API} has a current overview of all available Workers and can decide which Workers to give tasks to. This error occurs however, when a Worker tries to send such a request and the request fails because the \ac{API} is unreachable. This can either occur because the \ac{API} has become unavailable or because the Worker's \ac{VM} has a network issue. As the main \ac{API} (besides two notable outages that lead to the \ac{API} being offline for a few minutes) had an uptime of 99\%, the error is most likely with the Worker system itself. 
+To find out what the main issue behind the Worker errors is, it is again helpful to take a look at the most common error types (see \autoref{fig:worker-error-types}). This shows that more than 90\% of the errors have the error log \textit{"Sending Heartbeat failed"}. A Worker sends a \textit{Heartbeat} HTTP request once per minute to the main \ac{API} with its current status and workload so the \ac{API} has a current overview of all available Workers and can decide which Workers to give tasks to. This error occurs however, when a Worker tries to send such a request and the request fails because the \ac{API} is unreachable. This can either occur because the \ac{API} has become unavailable or because the Worker's \ac{VM} has a network issue. As the main \ac{API} (besides two notable outages that lead to the \ac{API} being offline for a few minutes) had an uptime of 99\%, the error is most likely with the Worker system itself. 
 
 When taking a closer look at the actual logs, especially at other more critical error types that occur less often such as \textit{"Error uploading stream"}, it becomes clear that most of these errors are reported always by the two same Worker \ac{VM}s:
 
@@ -111,7 +111,7 @@ When taking a closer look at the actual logs, especially at other more critical 
     \item \texttt{labels=\{container=live\_worker..., error=Post "http://vodservice:8089": dial tcp 10.0.1.2:8089: i/o timeout, host=B, level=error, msg=Error\\ uploading stream, stream=..., time=...\}}
 \end{itemize}
 
-Note that for simplicity, some information has been redacted from the logs and the hosts have been renamed to \texttt{A} and \texttt{B}. However, the main point remains that it appears that the errors occur due to a timeout when trying to reach the VOD Service. As all Workers run the same on the Worker-version and on similar \ac{VM}s, and only the two Workers on host \texttt{A} and \texttt{B} report timeout error, it might be due to a misconfiguration or separate issue with the \ac{VM} itself. 
+Note that for simplicity, some information has been redacted from the logs and the hosts have been renamed to \texttt{A} and \texttt{B}. However, the main point remains that it appears that the errors occur due to a timeout when trying to reach the VOD Service. As all Workers run on the same Worker-version and on similar \ac{VM}s, and only the two Workers on host \texttt{A} and \texttt{B} report timeout error, it might be due to a misconfiguration or separate issue with the \ac{VM} itself. A possible solution to improve debugging this error would be to include more details of the host \ac{VM} or Worker name in the error log. 
 
 \begin{figure}[htpb]
     \centering
@@ -119,9 +119,9 @@ Note that for simplicity, some information has been redacted from the logs and t
     \caption[Worker Error Types]{Worker Error Types}\label{fig:worker-error-types}
 \end{figure}
 
-\subsection{Future Improvement: Runners}
+\subsection{Future Improvement: Runners}\label{subsection:runner}
 
-At the time of this thesis, GoCast is developing a more robust and scalable alternative to the old Worker system: The Runner. In comparison to the Worker system, which receives a task (e.g., to upload a lecture) and then performs it straightaway, the Runner system works on the basis of queues and jobs. With this, incoming tasks are not just performed resulting in either success or an error, but rather scheduled and handled internally in such a way that a task consists of multiple jobs that can be prioritized accordingly, and, if failed, can be automatically retried multiple times before returning an error. Such a system would most likely solve errors such as the \textit{"Error uploading stream"} error mentioned before as the error would be handled internally and retried within certain time interval before reporting an error and aborting the task.
+At the time of this thesis, GoCast is developing a more robust and scalable alternative to the old Worker system: The Runner. In comparison to the Worker system, which receives a task (e.g., to upload a lecture) and then performs it straightaway, the Runner system works on the basis of queues and jobs. With this, incoming tasks are not just performed resulting in either success or an error, but rather scheduled and handled internally in such a way that a task consists of multiple jobs that can be prioritized accordingly, and, if failed, can be automatically retried multiple times before returning an error. Such a system would most likely solve errors such as the \textit{"Error uploading stream"} error mentioned before as the error would be handled internally and retried within a certain time interval before reporting an error and aborting the task.
 
 % \begin{figure}[htpb]
 %     \centering
@@ -136,9 +136,8 @@ At the time of this thesis, GoCast is developing a more robust and scalable alte
 
 \section{A Technical Comparison of REST and gRPC APIs}
 
-While analyzing the performance and limitations of the individual microservices of GoCast can help to resolve bottlenecks, at the core of the entire system there is still the main GoCast \ac{API}.
-Most services (besides the VOD Service and Edge Servers) depend on the main \ac{API} to fetch up-to data information on streams and courses, to send updates on their current status and to notify it whenever there are new streams or \ac{VOD}s. Also, from the end-user's perspective, the \ac{API} needs to be able to handle many concurrent requests as efficiently as possible to serve the actual streaming site and its data to the user's browser client.
-Hence, in this section we'll focus on at two different \ac{API} design approaches: gRPC and REST.
+While analyzing the performance and limitations of the individual microservices of GoCast can help to resolve bottlenecks, at the core of the entire system there is the main GoCast \ac{API}.
+Most services depend on the main \ac{API} to fetch up-to-date information on streams and courses, to send updates on their current status and to notify it whenever there are new streams or \ac{VOD}s. Also, from the end-user's perspective, the \ac{API} needs to handle many concurrent requests as efficiently as possible. Hence, in this section we'll focus on two different \ac{API} design approaches: gRPC and REST.
 
 \subsection{Why gRPC?}
 
@@ -153,11 +152,12 @@ The prototype is based on the \href{https://google.golang.org/grpc}{official Go 
 
 \subsubsection{JMeter Configuration and Data Collection}
 
-To perform the performance tests that resulted in the data used in the following section, \href{https://jmeter.apache.org/}{Apache JMeter} - an open-source load tester and performance measurer was used. The main advantage of it is, that it exclusively works at protocol level, meaning that it appears and behaves like a browser (or rather, multiple browsers) to web-services, while not performing all the actions supported by browsers. The performed tests were structured using two thread groups - one for REST and one for gRPC - with each having three requests for the respective REST endpoints and gRPC methods:
+To perform the performance tests that resulted in the data used in the following section, \href{https://jmeter.apache.org}{Apache JMeter}\footnote{\url{https://jmeter.apache.org}} - an open-source load tester and performance measurer was used. The main advantage of it is, that it exclusively works at protocol level, meaning that it appears and behaves like a browser (or rather, multiple browsers) to web-services, while not performing all the actions supported by browsers. The performed tests were structured using two thread groups - one for REST and one for gRPC - with each having three requests for the respective REST endpoints and gRPC methods:
 \begin{itemize}
     \item REST: \texttt{GET:/courses}, \texttt{POST:/user/settings}, \texttt{PATCH:stream/bookmarks}
     \item gRPC: \texttt{getPublicCourses}, \texttt{postSettings}, \texttt{putBookmarks}
 \end{itemize}
+\break
 Each thread group used a thread pool (users) of size 150, a ramp-up period of 10 seconds and a repetition of 10,000 loops.
 To measure, compare and export the response time, JMeter-listeners like \textit{Graph Results}, \textit{Summary Report} and \textit{Simple Data Writer} were used. To handle errors and check that the requests were performed successfully, JMeter’s \textit{View Results Tree} was used which captured any failed requests or error codes.
 
@@ -195,12 +195,12 @@ To evaluate whether gRPC provides significant enough benefits, the focus was on 
 
 \begin{itemize}
     \item 
-        \textbf{Latency}: Response Time of an individual request - see \autoref{fig:comp-response-time} and \autoref{fig:comp-distribution}.
-        \begin{figure}[htpb]
-            \centering
-                \includegraphics[width=\linewidth]{images/plots/comp/response_time_comparison.png}
-            \caption[Response Time Comparison]{Response Time Comparison}\label{fig:comp-response-time}
-        \end{figure}
+        \textbf{Latency}: Response Time of an individual request - see \autoref{fig:comp-distribution}.
+        % \begin{figure}[htpb]
+        %     \centering
+        %         \includegraphics[width=\linewidth]{images/plots/comp/response_time_comparison.png}
+        %     \caption[Response Time Comparison]{Response Time Comparison}\label{fig:comp-response-time}
+        % \end{figure}
         
         \begin{figure}[htpb]
             \centering
@@ -208,7 +208,7 @@ To evaluate whether gRPC provides significant enough benefits, the focus was on 
             \caption[Response Time Distribution]{Response Time Distribution}\label{fig:comp-distribution}
         \end{figure}
     \item 
-        \textbf{Throughput}: measures how many requests per minutes the \ac{API} can handle - see \autoref{fig:comp-throughput}
+        \textbf{Throughput}: How many requests per minutes the \ac{API} can handle - see \autoref{fig:comp-throughput}
         \begin{figure}[htpb]
             \centering
                 \includegraphics[width=\linewidth]{images/plots/comp/throughput_over_time.png}
@@ -223,9 +223,9 @@ As expected, gRPC is significantly faster due to its use of Protocol Buffers and
 \begin{enumerate}
     \item \textbf{Performance Benefits}: gRPC offers approximately a 3-times significant reduction in latency and an 8 times increase in throughput. It can also be observed in \autoref{fig:comp-response-time} that the standard deviation of the response time with gRPC requests (36.13 ms) is nearly half that of HTTP requests (60.38 ms) which could lead to an overall more stable \ac{API} performance.  When considering outliers, the gRPC \ac{API} again outperforms the REST \ac{API}, having a maximum latency of 2,090 ms for slow requests compared to 4,562 ms for the REST \ac{API}.
 
-    \item \textbf{Browser Compatibility}: While the lack of native browser support for gRPC might make REST a better fit, the current gRPC prototype exposes an HTTP Gateway that can be accessed just like a REST \ac{API} by browser-based clients. Also, the gRPC prototype only contained "normal" endpoints, but considering the many real-time use cases that come with streaming (e.g., the live chat), gRPC’s bidirectional streaming could be a big advantage over REST.
+    \item \textbf{Browser Compatibility}: While the lack of native browser support for gRPC might make REST a better fit, the current gRPC prototype exposes a HTTP Gateway that can be accessed just like a REST \ac{API} by browser-based clients. Also, the gRPC prototype only contained "normal" endpoints, but considering the many real-time use cases that come with streaming (e.g., the live chat), gRPC’s bidirectional streaming could be a big advantage over REST.
 
-    \item \textbf{Migration Effort}: Migrating to gRPC would require a complete re-implementation from scratch of the GoCast \ac{API} with significant changes clients and infrastructure. While tools for REST are widely spread (e.g., Postman, cURL), the gRPC ecosystem currently has fewer options for debugging, monitoring, and testing and often requires installing additional third-party add-ons to make commonly used tools compatible with gRPC. Also considering the time and resources needed for this transition, as well as experience of the developers that would have to work on this to handle gRPC and its related challenges, this might become an issue that outweighs the performance benefits.
+    \item \textbf{Migration Effort}: Migrating to gRPC would require a complete re-implementation from scratch of the GoCast \ac{API} with significant changes to the clients and infrastructure. While tools for REST are widely spread (e.g., Postman, cURL), the gRPC ecosystem currently has fewer options for debugging, monitoring, and testing and often requires installing additional third-party add-ons to make commonly used tools compatible with gRPC.
 \end{enumerate}
 
 \section{Limitations of the Current System}
@@ -234,21 +234,16 @@ Given the analyzed data and review of GoCast's codebase, some limitations have b
 
 \subsection{GoCast's In-Memory Chat System}
 
-A major limitation of GoCast is its chat system. Currently, it is implemented as a combination of TCP and WebSockets to transmit real-time updates to viewers, but saves the actual chat channels in memory. This means that if the main \ac{API} would be scaled to multiple instances and two users were to connect to two separate instances, their chat messages would never reach the other instance. A possible solution for this problem would be to refactor the chat system on the server-side to store the chat messages in a separate in-memory database such as \href{https://redis.io/}{Redis} or use distributed messaging services such as \href{https://github.com/nats-io/nats-server}{NATS.io}. Alternatively, it is also possible to fix this issue by always having a certain GoCast instance being responsible for a certain chat or defining a hash function that determines depending on the current number of available instances, to which instance messages of a certain stream should be posted. 
+A major limitation of GoCast is its chat system. Currently, it is implemented as a combination of TCP and WebSockets to transmit real-time updates to viewers, but saves the actual chat channels in memory. This means that if the main \ac{API} would be scaled to multiple instances and two users were to connect to two separate instances, their chat messages would never reach the other instance. A possible solution for this problem would be to refactor the chat system on the server-side to store the chat messages in a separate in-memory database such as \href{https://redis.io}{Redis}\footnote{\url{https://redis.io}} or use distributed messaging services such as \href{https://github.com/nats-io/nats-server}{NATS.io}\footnote{\url{https://github.com/nats-io/nats-server}}. Alternatively, it is also possible to fix this issue by always having a certain GoCast instance being responsible for a certain chat or defining a hash function that determines to which instance messages of a certain stream should be posted.
 
 \subsection{N+1 Queries}
 
-Another weakness of the current system is the N+1 query problem, which is the result of multiple database queries executed to fetch data between \ac{ORM} models. The N+1 query problem occurs when one initial query is followed by N additional queries for associated data, leading to performance degradation when N is large. In the current implementation, certain database operations, especially when retrieving courses and their associated streams or users, have this issue, as instead of creating one longer query that returns the given object and associations, first one query is retrieves the object itself and then N queries retrieve the associated objects individually. This results in a high number of queries being executed (N+1 instead of only 1) and negatively impacts performance, especially at scale.
+Another weakness of the current system is the N+1 query problem, which is the result of multiple database queries executed to fetch data between \ac{ORM} models. The N+1 query problem occurs when one initial query is followed by N additional queries for associated data, leading to performance degradation when N is large. In the current implementation, certain database operations, especially when retrieving courses and their associated streams or users, have this issue, as instead of creating one longer query that returns the given object and associations, first one query retrieves the object itself and then N queries retrieve the associated objects individually. This results in a high number of queries being executed (N+1 instead of only 1) and negatively impacts performance, especially at scale.
 
 \subsubsection{Example of N+1 Problem in the Current Code:}
 
-In the current implementation of the \texttt{liveStreams} method, for each live stream retrieved by the \texttt{GetCurrentLive} query, additional queries are executed to fetch the associated course and lecture hall.
+In the \texttt{liveStreams} method, for each live stream retrieved by the \texttt{GetCurrentLive} query, additional queries are executed to fetch the associated course and lecture hall.
 
-\begin{enumerate}
-    \item The first query retrieves all currently live streams.
-    \item For each stream, a separate query fetches its associated course.
-    \item For each stream, an additional query fetches its associated lecture hall.
-\end{enumerate}
 \begin{figure}[htpb]
   \begin{tabular}{c}
   \ \small \begin{lstlisting}[language=Go]
@@ -264,6 +259,12 @@ In the current implementation of the \texttt{liveStreams} method, for each live 
   \end{tabular}
   \label{fig:n+1-example-livestreams}
 \end{figure}
+
+\begin{enumerate}
+    \item The first query retrieves all currently live streams.
+    \item For each stream, a separate query fetches its associated course.
+    \item For each stream, an additional query fetches its associated lecture hall.
+\end{enumerate}
 
 This leads to N additional queries for the courses and lecture halls for each live stream, resulting in a total of 2N queries plus one initial query for fetching the streams. As we know from \autoref{subsection:user-stats-tumlive}, TUM-Live can have up to 100 active streams with more than 1,000 viewers a day, resulting in a significant number of unnecessary queries.
 
@@ -287,7 +288,7 @@ This leads to N additional queries for the courses and lecture halls for each li
       \end{tabular}
     \end{figure}
 
-        Now, the \texttt{liveStreams} endpoint doesn't need to making additional queries for each stream:
+        Now, the \texttt{liveStreams} endpoint does not need to making additional queries for each stream:
     
     \begin{figure}[htpb]
       \begin{tabular}{c}
@@ -305,11 +306,11 @@ This leads to N additional queries for the courses and lecture halls for each li
       \end{tabular}
     \end{figure}
 
-    \item \textbf{Batch Queries}: Instead of loading each associated object one by one, the \texttt{GetCurrentLive} method could collect all currently live stream's IDs first and then batch the queries, reducing the number of database calls.
+    \item \textbf{Batch Queries}: Instead of loading each object one by one, the \texttt{GetCurrentLive} method could collect the IDs of currently live stream first and then batch the queries, reducing the number of database calls.
 
     \item \textbf{Caching}: While not particularly fitting for this example, N+1 queries can be resolved by caching frequently accessed data (with careful invalidation) to reduce overall database queries.
 
-    \item \textbf{GraphQL or DataLoader}: A more advanced solution would be to use batching mechanisms like \href{https://github.com/graphql/dataloader}{DataLoader}, often used in GraphQL environments, to batch multiple requests for related data into a single query.
+    \item \textbf{GraphQL or DataLoader}: A more advanced solution would be to use batching mechanisms like \href{https://github.com/graphql/dataloader}{DataLoader}\footnote{\url{https://github.com/graphql/dataloader}}, often used in GraphQL environments, to batch multiple requests for related data into a single query.
 \end{enumerate}
 
 
@@ -323,5 +324,5 @@ While the gRPC prototype showed promising results, when it comes to comparing th
     Also, for potential bandwidth issues, network traffic could be analyzed to understand the differences in payload size and bandwidth usage.
     
     \item \textbf{Error Rates and Reliability}
-    In a production-like environment it could be evaluated how both systems behave under load or failure scenarios. Does one \ac{API} lead to more errors under heavy load, or can both handle the same level of traffic? One could measure the error rate (=percentage of failed requests during the test) or the time to recover from errors or failures (e.g., retries, handling errors, etc.).
+    In a production-like environment for testing purposes it could be evaluated how both systems behave under load or failure scenarios. Does one \ac{API} lead to more errors under heavy load, or can both handle the same level of traffic? One could measure the error rate (=percentage of failed requests during the test) or the time to recover from errors or failures (e.g., retries, handling errors, etc.).
 \end{itemize}
