@@ -2,7 +2,7 @@
 % !TeX root = ../main.tex
 % Add the above to each chapter to make compiling the PDF easier in some editors.
 
-\chapter{Optimization and Alternative Technologies}\label{chapter:optimization_and_alternative_technologies}
+\chapter{Performance Optimization and Error Analysis}\label{chapter:optimization_and_alternative_technologies}
 
 This chapter presents an insight into collected log and error metrics, a detailed analysis of the performance of GoCast's Workers, as well as an optimization approach for the main GoCast\ac{API} that compares the current REST \ac{API} with a prototype of a gRPC \ac{API}.   
 
@@ -271,7 +271,8 @@ In the \texttt{liveStreams} method, for each live stream retrieved by the \textt
 \subsubsection{Possible Solutions:}
 
 \begin{enumerate}
-    \item \textbf{Use Preloading to Eagerly Load Associations}: By preloading the associated data (courses and lecture halls) in a single query, the number of database queries can be reduced to a minimum. For example, the \texttt{GetCurrentLive} method could be refactored to preload the \texttt{Course} and \texttt{LectureHall} fields as shown below:
+
+\item \textbf{Use Preloading to Eagerly Load Associations}: By preloading the associated data (courses and lecture halls) in a single query, the number of database queries can be reduced to a minimum. For example, the \texttt{GetCurrentLive} method could be refactored to preload the \texttt{Course} and \texttt{LectureHall} fields as shown below:
 
     \begin{figure}[htpb]
       \begin{tabular}{c}
@@ -288,7 +289,7 @@ In the \texttt{liveStreams} method, for each live stream retrieved by the \textt
       \end{tabular}
     \end{figure}
 
-        Now, the \texttt{liveStreams} endpoint does not need to making additional queries for each stream:
+Now, the \texttt{liveStreams} endpoint does not need to making additional queries for each stream:
     
     \begin{figure}[htpb]
       \begin{tabular}{c}

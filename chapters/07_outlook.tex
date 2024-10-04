@@ -2,14 +2,28 @@
 % !TeX root = ../main.tex
 % Add the above to each chapter to make compiling the PDF easier in some editors.
 
-\chapter{Outlook}\label{chapter:outlook}
+\chapter{Outlook and Alternative Technologies}\label{chapter:outlook}
 
-Specialized Clouds for Video Streaming (?)
+In the previous sections we looked at possible optimization approaches and limitations of TUM-Live. This chapter goes on step further and takes a brief look at current developments, trends and future technologies in the field of video streaming.
 
-Single Streaming Engine for both Live- and VOD-Streaming (?)
+\section{Machine Learning for Cloud Video Streaming Services}
 
-Blockchain Technology for Video Streaming (?)
+One promising application is predicting the transcoding time of video segments before scheduling, given an input video stream and its transcoding parameters, using the transcoding time as a random variable based on past observations. Simulation results show that such prediction methods can lead to significantly better load balancing of transcoding jobs than traditional methods~\parencite{cloud_predicting}.
+This would be especially useful for cloud environments, as accurate task execution time estimations can lower overall usage costs and and resource provisioning. Other possible application fields of machine learning are for cost and storage optimization of deployed streaming systems, which could lead up to 15\% to 20\% compared to current methods~\parencite{deep_learning_cloud}.
 
-Machine Learning for Video Processing (?)
+\section{Blockchain Technology for Video Streaming}
 
-Media Over QUIC (?)
+Blockchain is a technology that allows secure \ac{P2P} communication through a shared database called a distributed ledger. In this system, every computer (node) in the network has a copy of the blockchain, which contains the full history of all transactions. Before a transaction can be added, all nodes must agree on it.
+Blockchain could potentially have a big impact on the video streaming industry, as it could be used to create a whitelist of approved publishers or distributors to control user identities in a decentralized way.
+Currently, the video streaming industry is mainly controlled by quality standards and algorithms set by streaming platforms. For example, on YouTube, the search and recommendation systems are controlled by YouTube, not the creator. A Blockchain supported system changes this by giving publishers more freedom to share their content~\parencite{cloud_streaming}.
+
+\section{Media Over QUIC}
+
+Media over QUIC is built on top of the QUIC protocol\footnote{QUIC (Quick UDP Internet Connections), published in 2013 is a transport protocol designed to address the performance and security limitations of traditional protocols like TCP. It is built on top of UDP and combines features from protocols such as TLS and HTTP/2 to provide low-latency and secure data transmissions~\parencite{quic}.}, focusing real-time media streaming taking advantage of the same benefits that QUIC offers over regular TCP. Like QUIC, Media over QUIC provides reduced connection setup times, encryption by default, multiplexing to avoid head-of-line blocking and congestion control, leading to significantly reduced latency in comparison to other standards~\parencite{moq_ieft}.
+
+~\parencite{moq_project}
+% With Media over QUIC, streaming services could benefit from features such as improved connections, making it a potential new standard for high-quality, low-latency video streaming in the future.
+
+\section{Environmental Considerations}
+
+Video streaming services are increasingly being recognized as resource-intensive, consuming significant amounts of computational power and storage. Given the environmental focus nowadays, performing compute- and storage-intensive tasks, might require companies to consider their ecological footprint first. Advancements in video compression standards can reduce overall bandwidth usage, but also shift environmental responsibilities from data centers and streaming providers to end users and hardware manufacturers, as more efficient video compression algorithms require additional processing power to encode and decode video, which increases the energy consumption of end-user devices~\parencite{save_environment}.
