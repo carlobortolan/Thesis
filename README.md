@@ -7,7 +7,7 @@ This repository contains all the code related to my Bachelor's Thesis, _"Scalabi
 - [`master`](https://github.com/carlobortolan/Thesis/tree/master): Latex code for the final written thesis.
 - [`analytics`](https://github.com/carlobortolan/Thesis/tree/analytics): Python code used for generating various plots and statistical calculations.
 - [`enh/api_v2`](https://github.com/carlobortolan/Thesis/tree/enh/api_v2): A downstream copy of the [gRPC API Prototype of GoCast](https://github.com/TUM-Dev/gocast/tree/enh/api_v2).
-- [`enh/scalable_infrastructure`](https://github.com/carlobortolan/Thesis/tree/enh/scalable_infrastructure): A downstream copy of the newly developed [distributed GoCast system](https://github.com/TUM-Dev/gocast/tree/enh/enh/scalable_infrastructure).
+- [`enh/scalable-infrastructure`](https://github.com/carlobortolan/Thesis/tree/enh/scalable-infrastructure): A downstream copy of the newly developed [distributed GoCast system](https://github.com/TUM-Dev/gocast/tree/enh/enh/scalable-infrastructure).
 - [`enh/docs`](https://github.com/carlobortolan/Thesis/tree/enh/docs): A downstream copy of the new [GoCast documentation](https://github.com/TUM-Dev/gocast/tree/enh/docs).
 
 > [!Note]
