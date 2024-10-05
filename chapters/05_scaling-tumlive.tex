@@ -190,7 +190,7 @@ The internal process of the RTMP-Proxy is as follows (see also \autoref{fig:rtmp
     \caption[RTMP-Proxy Flow]{RTMP-Proxy Data Flow}\label{fig:rtmp-proxy}
 \end{figure}
 
-\subsubsection{Architectural Challanges and Limitations with RTMP}
+\subsubsection{Architectural Challenges and Limitations with RTMP}
 
 Initially, for the prototype of the RTMP-Proxy the idea was to develop a microservice similar to the Edge Server or VOD Service written in Go that would redirect the \ac{RTMP} request (similar to a HTTP 302 redirect). However, after some testing, it quickly became obvious that Go does not have yet libraries to handle \ac{RTMP} requests with the necessary granularity. Hence, to proceed with this approach, it would require to use Go's native libraries to: 
 \begin{itemize}
@@ -207,7 +207,7 @@ Initially, for the prototype of the RTMP-Proxy the idea was to develop a microse
 A better solution was to use the \href{https://github.com/arut/nginx-rtmp-module}{nginx-rtmp-module}\footnotemark[7]\footnotetext[7]{\url{https://github.com/arut/nginx-rtmp-module}} that extends Nginx to handle \ac{RTMP} streaming requests natively~\parencite{nginx_rtmp_module}. 
 Now, whenever a stream request arrives at the proxy server, Nginx accepts the request and invokes a script that extracts the stream key (the personal token) and requests the actual destination URL from the GoCast \ac{API}. Upon receiving the destination URL, Nginx pushes the stream to the target server.
 
-\subsubsection{Implementation Details: FFmpeg vs OBS Compatibility}
+\subsubsection{Implementation Details: FFmpeg vs. OBS Compatibility}
 
 During the testing phase, it was observed that at times streaming via FFmpeg worked perfectly fine, while attempts using OBS failed:
 \begin{itemize}
@@ -283,7 +283,7 @@ The following are four approaches considered for the decision algorithm behind t
             SELECT o.id, o.parent_id FROM orgs o
             INNER JOIN org_hierarchy oh ON o.id = oh.parent_id 
         ) 
-        -- Then, select all Workers that are in the hiararchy or shared
+        -- Then, select all Workers that are in the hierarchy or shared
         SELECT w.* FROM workers w
         LEFT JOIN org_hierarchy oh ON oh.id = w.org_id
         WHERE oh.id IS NOT NULL OR w.shared = true;

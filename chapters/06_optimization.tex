@@ -57,7 +57,7 @@ The errors are not logged with a specific error type, but they contain a JSON St
   \caption[Example \ac{API} Error JSON]{Example \ac{API} Error JSON}\label{fig:api-error-json}
 \end{figure}
 
-\noindent As seen in \autoref{fig:api-error-types}, the most common error logged by the \ac{API} was \textit{'Could not generate live preview'} with 677 occurrences. To understand this error, first it is necessary to explain that GoCast allows admins to trigger certain cron jobs which then periodically perform a certain action such as importing course-assignments from CAMPUSonline, or in this case - fetching the thumbnails of live streams (Live Previews) from the GoCast Workers. Hence, this error is a result of the \texttt{FetchLivePreviews} cron job which is performed every minute to get a live thumbnail from a Worker. If this request returns an error, it logs the  ends the connection and decrements the Worker's workload. Possible reasons for this could be network issues preventing the communication with the Worker, general Worker unavailability, or invalid or incomplete parameters passed to the \texttt{getLivePreviewFromWorker} function.
+\noindent As seen in \autoref{fig:api-error-types}, the most common error logged by the \ac{API} was \textit{'Could not generate live preview'} with 677 occurrences. To understand this error, first it is necessary to explain that GoCast allows admins to trigger certain cron jobs which then periodically perform a certain action such as importing course-assignments from CAMPUSonline, or in this case - fetching the thumbnails of live streams (Live Previews) from the GoCast Workers. Hence, this error is a result of the \texttt{FetchLivePreviews} cron job which is performed every minute to get a live thumbnail from a Worker. If this request returns an error, it logs the error, ends the connection and decrements the Worker's workload. Possible reasons for this could be network issues preventing the communication with the Worker, general Worker unavailability, or invalid or incomplete parameters passed to the \texttt{getLivePreviewFromWorker} function.
 
 \begin{figure}[htpb]
     \centering
@@ -141,7 +141,7 @@ Most services depend on the main \ac{API} to fetch up-to-date information on str
 
 \subsection{Why gRPC?}
 
-\ac{gRPC}, released in 2015 by Google, is a modern open-source high performance Remote Procedure Call (RPC) framework that can run cross-platform in any environment. It's strengths are that it can efficiently connect services, supports load balancing, tracing, health checking and authentication.
+\ac{gRPC}, released in 2015 by Google, is a modern open-source high performance Remote Procedure Call (RPC) framework that can run cross-platform in any environment. Its strengths are that it can efficiently connect services, supports load balancing, tracing, health checking and authentication.
 Another particularity of \ac{gRPC} is that it automatically generate idiomatic client and server bindings for a service in a variety of languages and platforms using protofiles~\parencite{grpc_vs_rest}.
 As it will become clear in the next subsections, it's main advantage over classical HTTP/\ac{REST} \ac{API}s is that as is based on Protocol Buffers, it has a noticeable stronger performance~\parencite{grpc_vs_rest_2} and supports HTTP/2-based transport and bi-directional streaming, which is difficult with HTTP/1.1, and more efficient than using WebSockets for such purposes~\parencite{grpc_dev}.
 
