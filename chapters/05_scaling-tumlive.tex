@@ -276,7 +276,7 @@ The following are four approaches considered for the decision algorithm behind t
       \begin{tabular}{c}
       \ \small \begin{lstlisting}[language=SQL]
         -- 2. Recursive organization-based allocation example query
-        -- First, create a recursive query to follow the parent-child hiarachy upward
+        -- First, create a recursive query to follow the parent-child hierarchy upward
         WITH RECURSIVE org_hierarchy AS (
             SELECT id, parent_id FROM orgs WHERE id = ?
             UNION ALL

@@ -4,7 +4,7 @@
 
 \chapter{Performance Optimization and Error Analysis}\label{chapter:optimization_and_alternative_technologies}
 
-This chapter presents an insight into collected log and error metrics, a detailed analysis of the performance of GoCast's Workers, as well as an optimization approach for the main GoCast\ac{API} that compares the current REST \ac{API} with a prototype of a gRPC \ac{API}.   
+This chapter presents an insight into collected log and error metrics, a detailed analysis of the performance of GoCast's Workers, as well as an optimization approach for the main GoCast\ac{API} that compares the current \ac{REST} \ac{API} with a prototype of a \ac{gRPC} \ac{API}.   
 
 \section{Monitoring Stack}
 
@@ -137,40 +137,40 @@ At the time of this thesis, GoCast is developing a more robust and scalable alte
 \section{A Technical Comparison of REST and gRPC APIs}
 
 While analyzing the performance and limitations of the individual microservices of GoCast can help to resolve bottlenecks, at the core of the entire system there is the main GoCast \ac{API}.
-Most services depend on the main \ac{API} to fetch up-to-date information on streams and courses, to send updates on their current status and to notify it whenever there are new streams or \ac{VOD}s. Also, from the end-user's perspective, the \ac{API} needs to handle many concurrent requests as efficiently as possible. Hence, in this section we'll focus on two different \ac{API} design approaches: gRPC and REST.
+Most services depend on the main \ac{API} to fetch up-to-date information on streams and courses, to send updates on their current status and to notify it whenever there are new streams or \ac{VOD}s. Also, from the end-user's perspective, the \ac{API} needs to handle many concurrent requests as efficiently as possible. Hence, in this section we'll focus on two different \ac{API} design approaches: \ac{gRPC} and \ac{REST}.
 
 \subsection{Why gRPC?}
 
-gRPC, released in 2015 by Google, is a modern open-source high performance Remote Procedure Call (RPC) framework that can run cross-platform in any environment. It's strengths are that it can efficiently connect services, supports load balancing, tracing, health checking and authentication.
-Another particularity of gRPC is that it automatically generate idiomatic client and server bindings for a service in a variety of languages and platforms using protofiles~\parencite{grpc_vs_rest}.
-As it will become clear in the next subsections, it's main advantage over classical HTTP/REST \ac{API}s is that as is based on Protocol Buffers, it has a noticeable stronger performance~\parencite{grpc_vs_rest_2} and supports HTTP/2-based transport and bi-directional streaming, which is difficult with HTTP/1.1, and more efficient than using WebSockets for such purposes~\parencite{grpc_dev}.
+\ac{gRPC}, released in 2015 by Google, is a modern open-source high performance Remote Procedure Call (RPC) framework that can run cross-platform in any environment. It's strengths are that it can efficiently connect services, supports load balancing, tracing, health checking and authentication.
+Another particularity of \ac{gRPC} is that it automatically generate idiomatic client and server bindings for a service in a variety of languages and platforms using protofiles~\parencite{grpc_vs_rest}.
+As it will become clear in the next subsections, it's main advantage over classical HTTP/\ac{REST} \ac{API}s is that as is based on Protocol Buffers, it has a noticeable stronger performance~\parencite{grpc_vs_rest_2} and supports HTTP/2-based transport and bi-directional streaming, which is difficult with HTTP/1.1, and more efficient than using WebSockets for such purposes~\parencite{grpc_dev}.
 
 \subsection{GoCast's gRPC Prototype and JMeter Test Setup}
 
-GoCast's current REST \ac{API} is written in Go using the \href{https://github.com/gin-gonic/gin}{Gin-Gonic} HTTP web framework. To test if a switch to gRPC would be useful, a prototype for a gRPC \ac{API} V2 was developed and can be found in the \href{https://github.com/carlobortolan/thesis/tree/enh/api\_v2}{enh/api\_v2 branch of github.com/carlobortolan/thesis}.
-The prototype is based on the \href{https://google.golang.org/grpc}{official Go gRPC library} and uses \href{https://github.com/protocolbuffers/protobuf}{protoc} used to compile and generate Go code from the \texttt{.proto} files as well as \href{https://github.com/bufbuild/buf}{buf} for managing and generating protobuf files. Currently, only the most important original REST \ac{API} endpoints related to the user, course and stream management are supported by the prototype, as it is mainly intended for test purposes.
+GoCast's current \ac{REST} \ac{API} is written in Go using the \href{https://github.com/gin-gonic/gin}{Gin-Gonic} HTTP web framework. To test if a switch to \ac{gRPC} would be useful, a prototype for a \ac{gRPC} \ac{API} V2 was developed and can be found in the \href{https://github.com/carlobortolan/thesis/tree/enh/api\_v2}{enh/api\_v2 branch of github.com/carlobortolan/thesis}.
+The prototype is based on the \href{https://google.golang.org/gprc}{official Go \ac{gRPC} library} and uses \href{https://github.com/protocolbuffers/protobuf}{protoc} used to compile and generate Go code from the \texttt{.proto} files as well as \href{https://github.com/bufbuild/buf}{buf} for managing and generating protobuf files. Currently, only the most important original \ac{REST} \ac{API} endpoints related to the user, course and stream management are supported by the prototype, as it is mainly intended for test purposes.
 
 \subsubsection{JMeter Configuration and Data Collection}
 
-To perform the performance tests that resulted in the data used in the following section, \href{https://jmeter.apache.org}{Apache JMeter}\footnote{\url{https://jmeter.apache.org}} - an open-source load tester and performance measurer was used. The main advantage of it is, that it exclusively works at protocol level, meaning that it appears and behaves like a browser (or rather, multiple browsers) to web-services, while not performing all the actions supported by browsers. The performed tests were structured using two thread groups - one for REST and one for gRPC - with each having three requests for the respective REST endpoints and gRPC methods:
+To perform the performance tests that resulted in the data used in the following section, \href{https://jmeter.apache.org}{Apache JMeter}\footnote{\url{https://jmeter.apache.org}} - an open-source load tester and performance measurer was used. The main advantage of it is, that it exclusively works at protocol level, meaning that it appears and behaves like a browser (or rather, multiple browsers) to web-services, while not performing all the actions supported by browsers. The performed tests were structured using two thread groups - one for \ac{REST} and one for \ac{gRPC} - with each having three requests for the respective \ac{REST} endpoints and \ac{gRPC} methods:
 \begin{itemize}
-    \item REST: \texttt{GET:/courses}, \texttt{POST:/user/settings}, \texttt{PATCH:stream/bookmarks}
-    \item gRPC: \texttt{getPublicCourses}, \texttt{postSettings}, \texttt{putBookmarks}
+    \item \ac{REST}: \texttt{GET:/courses}, \texttt{POST:/user/settings}, \texttt{PATCH:stream/bookmarks}
+    \item \ac{gRPC}: \texttt{getPublicCourses}, \texttt{postSettings}, \texttt{putBookmarks}
 \end{itemize}
 \break
 Each thread group used a thread pool (users) of size 150, a ramp-up period of 10 seconds and a repetition of 10,000 loops.
 To measure, compare and export the response time, JMeter-listeners like \textit{Graph Results}, \textit{Summary Report} and \textit{Simple Data Writer} were used. To handle errors and check that the requests were performed successfully, JMeter’s \textit{View Results Tree} was used which captured any failed requests or error codes.
 
 \subsection{Comparison of GoCast's gRPC Prototype and Current REST API}
-The tests had a duration of 20 to 30 minutes and performed 1,196,180 HTTP requests with a mean response time of 644.55 ms and 1,171,342 gRPC requests with a mean response time of 162.69 ms. A more detailed overview can be found in \autoref{tab:rest_grpc_statistics}.
+The tests had a duration of 20 to 30 minutes and performed 1,196,180 HTTP requests with a mean response time of 644.55 ms and 1,171,342 \ac{gRPC} requests with a mean response time of 162.69 ms. A more detailed overview can be found in \autoref{tab:rest_grpc_statistics}.
 
 \begin{table}[htbp]
 \centering
-\caption{Statistical Analysis of REST and gRPC Data}
+\caption{Statistical Analysis of \ac{REST} and \ac{gRPC} Data}
 \label{tab:rest_grpc_statistics}
 \begin{tabular}{|l|l|l|}
 \hline
-\textbf{Metric} & \textbf{REST \ac{API}} & \textbf{gRPC \ac{API}} \\ \hline
+\textbf{Metric} & \textbf{\ac{REST} \ac{API}} & \textbf{\ac{gRPC} \ac{API}} \\ \hline
 \textbf{Count} & 1,196,180 & 1,171,342 \\ \hline
 \multicolumn{3}{|c|}{\textbf{Elapsed Time}} \\ \hline
 Mean & 644.55 ms & 162.69 ms \\ \hline
@@ -180,7 +180,7 @@ Min & 101 ms & 101 ms \\ \hline
 Median (50th percentile) & 642 ms & 152 ms \\ \hline
 75th percentile & 659 ms & 175 ms \\ \hline
 Max & 4,562 ms & 2,090 ms \\ \hline
-\multicolumn{3}{|c|}{\textbf{grpThreads (allThreads for REST)}} \\ \hline
+\multicolumn{3}{|c|}{\textbf{grpThreads (allThreads for \ac{REST})}} \\ \hline
 Mean & 149.90 & 149.21 \\ \hline
 Standard deviation & 2.94 & 2.28 \\ \hline
 Min & 2 & 11 \\ \hline
@@ -191,7 +191,7 @@ Max & 150 & 150 \\ \hline
 \end{tabular}
 \end{table}
 
-\noindent To evaluate whether gRPC provides significant enough benefits, the focus was on collecting and analyzing the following metrics:
+\noindent To evaluate whether \ac{gRPC} provides significant enough benefits, the focus was on collecting and analyzing the following metrics:
 
 \begin{itemize}
     \item 
@@ -218,14 +218,14 @@ Max & 150 & 150 \\ \hline
 
 \subsection{Results}
 
-As expected, gRPC is significantly faster due to its use of Protocol Buffers and HTTP/2, which reduces overhead compared to HTTP/1.1. To evaluate whether gRPC justifies the effort of switching the \ac{API} Design, there are three main considerations:
+As expected, \ac{gRPC} is significantly faster due to its use of Protocol Buffers and HTTP/2, which reduces overhead compared to HTTP/1.1. To evaluate whether \ac{gRPC} justifies the effort of switching the \ac{API} Design, there are three main considerations:
 
 \begin{enumerate}
-    \item \textbf{Performance Benefits}: gRPC offers approximately a 3-times significant reduction in latency and an 8 times increase in throughput. It can also be observed in \autoref{fig:comp-response-time} that the standard deviation of the response time with gRPC requests (36.13 ms) is nearly half that of HTTP requests (60.38 ms) which could lead to an overall more stable \ac{API} performance.  When considering outliers, the gRPC \ac{API} again outperforms the REST \ac{API}, having a maximum latency of 2,090 ms for slow requests compared to 4,562 ms for the REST \ac{API}.
+    \item \textbf{Performance Benefits}: \ac{gRPC} offers approximately a 3-times significant reduction in latency and an 8 times increase in throughput. It can also be observed that the standard deviation of the response time with \ac{gRPC} requests (36.13 ms) is nearly half that of HTTP requests (60.38 ms) which could lead to an overall more stable \ac{API} performance.  When considering outliers, the \ac{gRPC} \ac{API} again outperforms the \ac{REST} \ac{API}, having a maximum latency of 2,090 ms for slow requests compared to 4,562 ms for the \ac{REST} \ac{API}.
 
-    \item \textbf{Browser Compatibility}: While the lack of native browser support for gRPC might make REST a better fit, the current gRPC prototype exposes a HTTP Gateway that can be accessed just like a REST \ac{API} by browser-based clients. Also, the gRPC prototype only contained "normal" endpoints, but considering the many real-time use cases that come with streaming (e.g., the live chat), gRPC’s bidirectional streaming could be a big advantage over REST.
+    \item \textbf{Browser Compatibility}: While the lack of native browser support for \ac{gRPC} might make \ac{REST} a better fit, the current \ac{gRPC} prototype exposes a HTTP Gateway that can be accessed just like a \ac{REST} \ac{API} by browser-based clients. Also, the \ac{gRPC} prototype only contained "normal" endpoints, but considering the many real-time use cases that come with streaming (e.g., the live chat), \ac{gRPC}’s bidirectional streaming could be a big advantage over \ac{REST}.
 
-    \item \textbf{Migration Effort}: Migrating to gRPC would require a complete re-implementation from scratch of the GoCast \ac{API} with significant changes to the clients and infrastructure. While tools for REST are widely spread (e.g., Postman, cURL), the gRPC ecosystem currently has fewer options for debugging, monitoring, and testing and often requires installing additional third-party add-ons to make commonly used tools compatible with gRPC.
+    \item \textbf{Migration Effort}: Migrating to \ac{gRPC} would require a complete re-implementation from scratch of the GoCast \ac{API} with significant changes to the clients and infrastructure. While tools for \ac{REST} are widely spread (e.g., Postman, cURL), the \ac{gRPC} ecosystem currently has fewer options for debugging, monitoring, and testing and often requires installing additional third-party add-ons to make commonly used tools compatible with \ac{gRPC}.
 \end{enumerate}
 
 \section{Limitations of the Current System}
@@ -317,11 +317,11 @@ Now, the \texttt{liveStreams} endpoint does not need to making additional querie
 
 \subsection{Other Factors for API Design}
 
-While the gRPC prototype showed promising results, when it comes to comparing the different \ac{API} design approaches, there are additional factors that can be considered:
+While the \ac{gRPC} prototype showed promising results, when it comes to comparing the different \ac{API} design approaches, there are additional factors that can be considered:
 
 \begin{itemize}
     \item \textbf{Resource Usage (CPU, Memory, Network)}
-    It might be interesting to compare how efficiently each \ac{API} handles resources under load. gRPC, with its smaller binary payloads, may consume less bandwidth, but may use more CPU. 
+    It might be interesting to compare how efficiently each \ac{API} handles resources under load. \ac{gRPC}, with its smaller binary payloads, may consume less bandwidth, but may use more CPU. 
     Also, for potential bandwidth issues, network traffic could be analyzed to understand the differences in payload size and bandwidth usage.
     
     \item \textbf{Error Rates and Reliability}

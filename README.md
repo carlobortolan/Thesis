@@ -1,47 +1,26 @@
-# LaTeX template for TUM theses
+# Thesis
 
-This is a LaTeX template created according to the guidelines for TUM informatics theses in WS 2022. **Always check the [current formatting guidelines][thesis-guidelines] before you hand in.** See [`build/main.pdf`][sample-pdf] for an example PDF created with this template.
+This repository contains all the code related to my Bachelor's Thesis, _"Scalability and Performance Optimization of Video Streaming Infrastructure"_.
 
-Note: Because of copyright considerations, TUM logos are not included in this template. Unfortunately, the logos are also not available on the MyTUM website anymore.
-Your supervisor should be able to hand them to you.
+## Structure/Content
 
-Comments & contributions are welcome!
+- [`master`](https://github.com/carlobortolan/Thesis/tree/master): Latex code for the final written thesis.
+- [`analytics`](https://github.com/carlobortolan/Thesis/tree/analytics): Python code used for generating various plots and statistical calculations.
+- [`enh/api_v2`](https://github.com/carlobortolan/Thesis/tree/enh/api_v2): A downstream copy of the [gRPC API Prototype of GoCast](https://github.com/TUM-Dev/gocast/tree/enh/api_v2).
+- [`enh/scalable_infrastructure`](https://github.com/carlobortolan/Thesis/tree/enh/scalable_infrastructure): A downstream copy of the newly developed [distributed GoCast system](https://github.com/TUM-Dev/gocast/tree/enh/enh/scalable_infrastructure).
+- [`enh/docs`](https://github.com/carlobortolan/Thesis/tree/enh/docs): A downstream copy of the new [GoCast documentation](https://github.com/TUM-Dev/gocast/tree/enh/docs).
 
-## Quickstart
-
- * [Download][template-download] and extract the template, or upload it to an online editor such as [Overleaf][overleaf] or [TUM ShareLaTeX][tum-sharelatex]. If you prefer to use Git, just clone/fork the repository.
-If your editor supports compiling LaTeX, set it up to use `pdflatex` and `biber`. Set the master document to `main.tex`. Alternatively, you can use the provided Makefile to generate a PDF in the `build` directory (requires `latexmk`).
- * To use Visual Studio Code install the [LaTeX Workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop) extension. Then as soon as you click on "Save" it automatically compiles your thesis for you without having to configure anything.
- * Look for `TODO` comments in the provided files. Start at `main.tex`.
-
-If you are new to LaTeX, the [Overleaf Documentation][overleaf-learn] or the [LaTeX Wikibook][latex-wikibook] might help.
-
-If you still have problems with the template, feel free to [create an issue][issue]. For general LaTeX questions, use [TeX StackExchange][tex-se].
-
+> [!Note]
+> The downstream copies of the various GoCast branches will not be updated after the thesis is completed. They serve as a persistent backup of the code used at the time of the thesis, in case the upstream branches are merged or deleted.
+ 
 ## License
 
-[![Creative Commons License][license-image]][license]
+The thesis has been written using the [TUM-Dev/tum-thesis-latex](https://github.com/TUM-Dev/tum-thesis-latex) template, following the official [thesis-guidelines](https://www.cit.tum.de/en/cit/studies/students/thesis-completing-your-studies/informatics/) at the [TUM School of Computation, Information and Technology](https://www.cit.tum.de/).
 
-This template is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License][license], meaning that:
+---
 
- * You can share (copy, redistribute) and adapt (remix, transform, build upon) this template for any purpose, even commercially.
- * If you share the template or a modified (derived) version of it, you must attribute the template to the original authors ([Florian Walch and contributors][template-authors]) by providing a [link to the original template][template-url] and indicate if changes were made.
- * Any derived template has to use the [same][license] or a [compatible license][license-compatible].
+© Carlo Bortolan
 
-The license **applies only to the template**; there are no restrictions on the resulting PDF file or the contents of your thesis.
-
-[issue]: https://github.com/TUM-Dev/tum-thesis-latex/issues
-[latex-wikibook]: https://en.wikibooks.org/wiki/LaTeX
-[license-compatible]: https://creativecommons.org/compatiblelicenses
-[license-image]: https://i.creativecommons.org/l/by-sa/4.0/88x31.png
-[license]: https://creativecommons.org/licenses/by-sa/4.0/
-[overleaf]: https://www.overleaf.com/
-[sample-pdf]: https://raw.github.com/TUM-Dev/tum-thesis-latex/master/build/main.pdf
-[overleaf-learn]: https://www.overleaf.com/learn
-[tum-sharelatex]: https://sharelatex.tum.de/ldap/login
-[template-authors]: https://github.com/TUM-Dev/tum-thesis-latex/graphs/contributors
-[template-download]: https://github.com/TUM-Dev/tum-thesis-latex/archive/master.zip
-[template-url]: https://github.com/TUM-Dev/tum-thesis-latex
-[tex-se]: https://tex.stackexchange.com/
-[thesis-guidelines]: https://www.cit.tum.de/en/cit/studies/students/thesis-completing-your-studies/informatics/
-[wiki]: https://github.com/TUM-Dev/tum-thesis-latex/wiki/
+> Carlo Bortolan &nbsp;&middot;&nbsp;
+> GitHub [carlobortolan](https://github.com/carlobortolan) &nbsp;&middot;&nbsp;
+> contact via [carlobortolan@gmail.com](mailto:carlobortolan@gmail.com)
