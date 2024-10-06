@@ -32,7 +32,7 @@ Run the following command to build the notebook. The build files can be found in
 make
 ```
 
-This will execute the Jupyter notebook and convert it to an HTML file, which will be moved to the `build` directory as `index.html`.
+This will execute the Jupyter Notebook and convert it to an HTML file, which will be moved to the `build` directory as `index.html.`
 
 To clean up the build directory, run:
 
