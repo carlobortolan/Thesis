@@ -4,7 +4,7 @@
 
 \chapter{Performance Optimization and Error Analysis}\label{chapter:optimization_and_alternative_technologies}
 
-This chapter presents an insight into collected log and error metrics, a detailed analysis of the performance of GoCast's Workers, as well as an optimization approach for the main GoCast\ac{API} that compares the current \ac{REST} \ac{API} with a prototype of a \ac{gRPC} \ac{API}.   
+This chapter analyses the performance of the Workers, based on collected TUM-Live log and error metrics and presents an optimization approach for the main GoCast\ac{API} that compares the current \ac{REST} \ac{API} with a prototype of a \ac{gRPC} \ac{API}.   
 
 \section{Monitoring Stack}
 
@@ -66,7 +66,7 @@ The errors are not logged with a specific error type, but they contain a JSON St
 \end{figure}
 \break
 
-\noindent When aggregating the errors by their hour and plotting them in a bar chart grouped by error type (\autoref{fig:api-errors-by-hour-and-type}), there's an interesting observation that the \textit{'Could not generate live preview'} error, which is the most common error, mainly occurs during normal lecture times from 6AM to 5PM. As the number of reported occurrences of this error is constant over these hours, it can be assumed that it is either an issue with an individual Worker that might have a connection issue or is running an outdated docker image (the log data does not provide information on which \ac{VM} the error occurred), or a bug that affects all Workers. However, since we know that the \ac{API} fetches the previews once every minute from all Workers, and the number of errors per hour is around 60, it is most likely an issue with one individual Worker. If the issue was a random connection error, the number of occurrences should vary significantly and if the issue was a system-wide misconfiguration or bug in the Worker microservice, the error should occur on all Workers, meaning that the number of errors should be: \texttt{number of Workers * 60}.     
+\noindent When aggregating the errors by their hour and plotting them in a bar chart grouped by error type (\autoref{fig:api-errors-by-hour-and-type}), there is an interesting observation that the \textit{'Could not generate live preview'} error, which is the most common error, mainly occurs during normal lecture times from 6AM to 5PM. As the number of reported occurrences of this error is constant over these hours, it can be assumed that it is either an issue with an individual Worker that might have a connection issue or is running an outdated docker image (the log data does not provide information on which \ac{VM} the error occurred), or a bug that affects all Workers. However, since we know that the \ac{API} fetches the previews once every minute from all Workers, and the number of errors per hour is around 60, it is most likely an issue with one individual Worker. If the issue was a random connection error, the number of occurrences should vary significantly and if the issue was a system-wide misconfiguration or bug in the Worker microservice, the error should occur on all Workers, meaning that the number of errors should be: \texttt{number of Workers * 60}.     
 
 \begin{figure}[htpb]
     \centering
@@ -111,7 +111,7 @@ When taking a closer look at the actual logs, especially at other more critical 
     \item \texttt{labels=\{container=live\_worker..., error=Post "http://vodservice:8089": dial tcp 10.0.1.2:8089: i/o timeout, host=B, level=error, msg=Error\\ uploading stream, stream=..., time=...\}}
 \end{itemize}
 
-Note that for simplicity, some information has been redacted from the logs and the hosts have been renamed to \texttt{A} and \texttt{B}. However, the main point remains that it appears that the errors occur due to a timeout when trying to reach the VOD Service. As all Workers run on the same Worker-version and on similar \ac{VM}s, and only the two Workers on host \texttt{A} and \texttt{B} report timeout error, it might be due to a misconfiguration or separate issue with the \ac{VM} itself. A possible solution to improve debugging this error would be to include more details of the host \ac{VM} or Worker name in the error log. 
+\noindent Note that for simplicity, some information has been redacted from the logs and the hosts have been renamed to \texttt{A} and \texttt{B}. However, the main point remains that it appears that the errors occur due to a timeout when trying to reach the VOD Service. As all Workers run on the same Worker-version and on similar \ac{VM}s, and only the two Workers on host \texttt{A} and \texttt{B} report timeout error, it might be due to a misconfiguration or separate issue with the \ac{VM} itself. A possible solution to improve debugging this error would be to include more details of the host \ac{VM} or Worker name in the error log. 
 
 \begin{figure}[htpb]
     \centering
@@ -137,18 +137,65 @@ At the time of this thesis, GoCast is developing a more robust and scalable alte
 \section{A Technical Comparison of REST and gRPC APIs}
 
 While analyzing the performance and limitations of the individual microservices of GoCast can help to resolve bottlenecks, at the core of the entire system, there is the main GoCast \ac{API}.
-Most services depend on the main \ac{API} to fetch up-to-date information on streams and courses, to send updates on their current status and to notify it whenever there are new streams or \ac{VOD}s. Also, from the end-user's perspective, the \ac{API} needs to handle many concurrent requests as efficiently as possible. Hence, in this section, we'll focus on two different \ac{API} design approaches: \ac{gRPC} and \ac{REST}.
+Most services depend on the main \ac{API} to fetch up-to-date information on streams and courses, to send updates on their current status and to notify it whenever there are new streams or \ac{VOD}s. Also, from the end-user's perspective, the \ac{API} needs to handle many concurrent requests as efficiently as possible. Hence, in this section, we will focus on two different \ac{API} design approaches: \ac{gRPC} and \ac{REST}.
+
+\begin{table}[htpb]
+\centering
+\begin{tabular}{|p{3.1cm}|p{5.1cm}|p{5.1cm}|}
+\hline
+\textbf{} & \textbf{\ac{REST}} & \textbf{\ac{gRPC}} \\
+\hline
+\textbf{Data Format} & 
+Plain-text formats like JSON or XML, which are human-readable but less efficient. & 
+\noindent \ac{Protobuf}, a more space-efficient binary format that is faster to (de)serialize but not human-readable. \\
+\hline
+\textbf{Communication Patterns} & 
+Follows a unary request/response model (client sends one request, the server responds with one reply). & 
+Supports multiple communication patterns: unary, server streaming, client streaming, and bidirectional streaming. \\
+\hline
+\textbf{Underlying Protocol} & 
+Uses HTTP/1.1, which is common for web applications, but slower than HTTP/2. & 
+Uses HTTP/2, offering advanced features like streaming and multiplexing, leading to reduced latency and higher throughput. \\
+\hline
+\textbf{Code Generation} & 
+Lacks built-in code generation, requiring third-party tools for code generation. & 
+Native code generation for both clients and servers in various languages via \ac{Protobuf}. \\
+\hline
+\textbf{Data Validation} & 
+Requires manual data validation for formats like JSON, increasing processing overhead. & 
+\ac{Protobuf} ensures strongly typed data "contracts", automatically validating messages. \\
+\hline
+\textbf{Bidirectional Streaming} & 
+Not supported natively. & 
+Allows bidirectional streaming, where both client and server can exchange messages over a single connection. \\
+\hline
+\textbf{Use Case} & 
+Simple, public-facing \ac{API}s where ease of integration and human-readability (e.g., JSON) are prioritized. & 
+High-performance, micro-service-based architectures with low-latency needs, especially for real-time data and high-throughput applications. \\
+\hline
+\textbf{Client-Server Coupling} & 
+Loosely coupled, making it easier for client and server to evolve independently. & 
+Tightly coupled due to shared \ac{Protobuf} files, requiring both client and server to have the same schema. \\
+\hline
+\textbf{Design Approach} & 
+Resource-oriented: Use HTTP methods (\texttt{GET}, \texttt{POST}, \texttt{PUT}, \texttt{DELETE}, \texttt{OPTIONS}) to operate on resources. & 
+Service-oriented: Invoke the \ac{gRPC} methods on the server as if they were local functions. \\
+\hline
+\end{tabular}
+\caption{Comparison between \ac{REST} and \ac{gRPC}~\parencite{grpc_vs_rest, grpc_vs_rest_2, grpc_vs_rest_3, grpc_vs_rest_4}}
+\label{table:rest_vs_grpc}
+\end{table}
 
 \subsection{Why gRPC?}
 
-\ac{gRPC}, released in 2015 by Google, is a modern open-source high-performance Remote Procedure Call (RPC) framework that can run cross-platform in any environment. Its strengths are that it can efficiently connect services and supports load balancing, tracing, health checking and authentication.
+\ac{gRPC}, released in 2015 by Google, is an open-source Remote Procedure Call (RPC) framework that can run cross-platform in any environment. Its strengths are that it can efficiently connect services and supports load balancing, tracing, health checking and authentication.
 Another particularity of \ac{gRPC} is that it automatically generates idiomatic client and server bindings for a service in various languages and platforms using protofiles~\parencite{grpc_vs_rest}.
-As it will become clear in the next subsections, its main advantage over classical HTTP/\ac{REST} \ac{API}s is that as is based on Protocol Buffers, it has a noticeable stronger performance~\parencite{grpc_vs_rest_2} and supports HTTP/2-based transport and bi-directional streaming, which is difficult with HTTP/1.1 and more efficient than using WebSockets for such purposes~\parencite{grpc_dev}.
+As it will become clear in the next subsections, its main advantage over classical HTTP/\ac{REST} \ac{API}s is that as is based on \ac{Protobuf}, it has a noticeably stronger performance~\parencite{grpc_vs_rest_2} and supports HTTP/2-based transport and bi-directional streaming, which is difficult with HTTP/1.1 and more efficient than using WebSockets for such purposes~\parencite{grpc_dev}.
 
 \subsection{GoCast's gRPC Prototype and JMeter Test Setup}
 
 GoCast's current \ac{REST} \ac{API} is written in Go using the \href{https://github.com/gin-gonic/gin}{Gin-Gonic} HTTP web framework. To test if a switch to \ac{gRPC} would be useful, a prototype for a \ac{gRPC} \ac{API} V2 was developed and can be found in the \href{https://github.com/carlobortolan/thesis/tree/enh/api\_v2}{enh/api\_v2 branch of github.com/carlobortolan/thesis}.
-The prototype is based on the \href{https://google.golang.org/gprc}{official Go \ac{gRPC} library} and uses \href{https://github.com/protocolbuffers/protobuf}{protoc} used to compile and generate Go code from the \texttt{.proto} files as well as \href{https://github.com/bufbuild/buf}{buf} for managing and generating protobuf files. Currently, only the most important original \ac{REST} \ac{API} endpoints related to the user, course and stream management are supported by the prototype, as it is mainly intended for test purposes.
+The prototype is based on the \href{https://google.golang.org/gprc}{official Go \ac{gRPC} library} and uses \href{https://github.com/protocolbuffers/protobuf}{protoc} used to compile and generate Go code from the \texttt{.proto} files as well as \href{https://github.com/bufbuild/buf}{buf} for managing and generating \ac{Protobuf} files. Currently, only the most important original \ac{REST} \ac{API} endpoints related to the user, course and stream management are supported by the prototype, as it is mainly intended for test purposes.
 
 \subsubsection{JMeter Configuration and Data Collection}
 
@@ -218,10 +265,10 @@ Max & 150 & 150 \\ \hline
 
 \subsection{Results}
 
-As expected, \ac{gRPC} is significantly faster due to its use of Protocol Buffers and HTTP/2, which reduces overhead compared to HTTP/1.1. To evaluate whether \ac{gRPC} justifies the effort of switching the \ac{API} Design, there are three main considerations:
+As expected, \ac{gRPC} is significantly faster due to its use of \ac{Protobuf} and HTTP/2, which reduces overhead compared to HTTP/1.1. To evaluate whether \ac{gRPC} justifies the effort of switching the \ac{API} Design, there are three main considerations:
 
 \begin{enumerate}
-    \item \textbf{Performance Benefits}: \ac{gRPC} offers approximately a 3-times significant reduction in latency and an 8-times increase in throughput. It can also be observed that the standard deviation of the response time with \ac{gRPC} requests (36.13 ms) is nearly half that of HTTP requests (60.38 ms) which could lead to an overall more stable \ac{API} performance.  When considering outliers, the \ac{gRPC} \ac{API} again outperforms the \ac{REST} \ac{API}, having a maximum latency of 2,090 ms for slow requests compared to 4,562 ms for the \ac{REST} \ac{API}.
+    \item \textbf{Performance Benefits}: \ac{gRPC} offers approximately a 3-times significant reduction in latency and an 8-times increase in throughput. It can also be seen that the standard deviation of the response time with \ac{gRPC} requests (36.13 ms) is nearly half that of HTTP requests (60.38 ms) which could lead to an overall more stable \ac{API} performance.  When considering outliers, the \ac{gRPC} \ac{API} again outperforms the \ac{REST} \ac{API}, having a maximum latency of 2,090 ms for slow requests compared to 4,562 ms for the \ac{REST} \ac{API}.
 
     \item \textbf{Browser Compatibility}: While the lack of native browser support for \ac{gRPC} might make \ac{REST} a better fit, the current \ac{gRPC} prototype exposes an HTTP Gateway that can be accessed just like a \ac{REST} \ac{API} by browser-based clients. Also, the \ac{gRPC} prototype only contained "normal" endpoints. Still, considering the many real-time use cases that come with streaming (e.g., the live chat), \ac{gRPC}’s bidirectional streaming could be a big advantage over \ac{REST}.
 

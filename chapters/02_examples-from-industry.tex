@@ -5,16 +5,17 @@ This chapter gives a broad overview of the history of video streaming (see \auto
 
 \section{History}
 The video streaming industry has evolved dramatically over the past decades, transitioning from old-fashioned technologies to highly complex, scalable infrastructures capable of simultaneously delivering large amounts of content to hundreds of millions of users. The origins of video streaming can be traced back to the late 1990s and early 2000s, with the introduction of streaming technologies like RealNetworks' RealPlayer and Apple's QuickTime. These early platforms allowed users to stream audio and video content, although it was of low quality and had significant buffering issues due to limited bandwidth and server capacities.
-Another important precursor to modern streaming was \ac{MBone}, a virtual network introduced in the early 1990s to support audio and video broadcasts over the internet, showing the potential behind internet-based multimedia transmission. 
+Another important precursor to modern streaming was \ac{MBone}, a virtual network introduced in the early 1990s to support audio and video broadcasts over the internet, showing the potential behind internet-based multimedia transmission. Around the same time, web conferencing (often called webcast) became popular for video-chat tools, multiuser application-sharing and real-time polls. 
 After the widespread adoption of Adobe Flash in the early 2000s, the interest in a single, unified streaming format started the development of a Flash-based streaming format, which was then used by Flash video players on most streaming sites.
 The real breakthrough in video streaming came in 2005 with the launch of YouTube, which introduced a user-friendly platform for uploading, sharing and streaming videos online. YouTube's success not only showed the willingness of users to produce, upload and consume hours of original video content via the internet but also the potential for scalable video streaming infrastructure, increasing the demand for online video content. At the same time, Netflix's pivot from a mail-based DVD rental business to streaming in 2007 set another milestone in the industry. 
 
-As internet speeds increased and cloud computing became more prevalent, the scalability of video streaming services improved (Netflix closed its last physical data center in mid-2016~\parencite{netflix_cloud}).
-Additionally, the introduction of \ac{ABR} streaming allowed platforms to dynamically adjust video quality based on the user's internet connection, reducing loading times and improving the overall viewing experience~\parencite{abr}. Meanwhile, using a \ac{CDN} became increasingly important for caching video data closer to users, thereby reducing latency and server load~\parencite{cdn_basic}.
+\noindent As internet speeds increased and cloud computing became more prevalent, the scalability of video streaming services improved (Netflix closed its last physical data center in mid-2016~\parencite{netflix_cloud}).
+Additionally, the introduction of \ac{ABR} streaming allowed platforms to dynamically adjust video quality depending on the user's internet connection, reducing loading times and improving the overall viewing experience~\parencite{abr}. Meanwhile, using a \ac{CDN} became increasingly important for caching video data closer to users, thereby reducing latency and server load~\parencite{cdn_basic}.
 
 \section{Example: Twitch}
-Twitch, launched in 2011 after the success of the general-interest streaming platform Justin.tv, has become synonymous with live streaming, particularly within the gaming community. Its rapid growth and popularity across different categories can be explained by its ability to simultaneously deliver high-quality, low-latency streams to millions of users. 
-One of Twitch's most significant challenges is the need to manage vast amounts of user-generated content in real-time and scale with high fluctuations in viewer numbers, particularly during major events like e-sports competitions.
+Twitch launched in 2011 as a spin-off of the general interest streaming platform Justin.tv. Since then, it has become synonymous with live streaming, particularly within the gaming community and is still growing rapidly across different categories. 
+
+One of Twitch's most significant challenges is managing vast amounts of user-generated content in real-time and scale with high fluctuations in viewer numbers, particularly during major events like e-sports competitions.
 Twitch's architecture is highly complex and needs to support millions of concurrent video streams, real-time interactions through chat and extensive data processing such as predictive modeling for personalized recommendations, spam detection for chat messages and targeted campaigns based on in-app user behavior~\parencite{twitch_analytics}. In the following, there is a detailed breakdown of the key components of its architecture (see also \autoref{fig:twitch-architecture}):
 
 \begin{figure}[htpb]
@@ -26,8 +27,8 @@ Twitch's architecture is highly complex and needs to support millions of concurr
 \begin{enumerate}
     \item \textbf{Video System}
     
-    The video system begins with the \textbf{video ingest} process, where live video streams are received from broadcasters. Twitch primarily uses \ac{RTMP} for this purpose. Once the video stream is ingested, it is transported to the \textbf{transcode system}. This system, implemented in a combination of C/C++ and Go, transcodes the incoming \ac{RTMP} stream into multiple \ac{HLS} streams to allow viewers to switch between different quality streams.
-    After transcoding, the streams are distributed through Twitch's global \textbf{Distribution and Edge} network consisting of multiple \ac{POPs}. The \ac{POPs} cache the \ac{HLS} streams and deliver them to users from geographically optimal locations, minimizing latency and buffering. The distribution system, also largely written in Go, is designed to scale massively, ensuring high availability even during peak usage times. Additionally, Twitch archives all live streams through its \textbf{\ac{VOD} system}, making content available for later viewing, either immediately after the live broadcast or as part of a long-term archive~\parencite{twitch_engineering}.
+    The video system begins with the \textbf{video ingest} process, where \ac{RTMP} live streams are received from streamers. Once the video stream is ingested, it is transported to the \textbf{transcode sub-system}. This sub-system, implemented in a combination of C/C++ and Go, transcodes the incoming \ac{RTMP} stream into multiple \ac{HLS} streams to allow viewers to switch between different resolutions when watching a stream.
+    After transcoding, the streams are distributed through Twitch's global \textbf{Distribution and Edge} network consisting of multiple \ac{POPs}. The \ac{POPs} cache the \ac{HLS} streams and deliver them to users from geographically optimal locations, minimizing latency and buffering. The distribution system, also largely written in Go, is designed to scale massively to ensure high availability even during peak usage times. Additionally, Twitch archives all live streams through its \textbf{\ac{VOD} system}, making content available for later viewing, either immediately after the live broadcast or as part of a long-term archive~\parencite{twitch_engineering}.
     
     \item \textbf{Chat}
 
@@ -37,11 +38,11 @@ Twitch's architecture is highly complex and needs to support millions of concurr
 
     \item \textbf{Web \ac{API}s and Data}
 
-    Twitch’s platform also includes a set of web \ac{API}s and data services that enable various functionalities, from user profile management to stream discovery. These \textbf{Web \ac{API}s} are built using a combination of Ruby on Rails, Go and other open-source technologies, designed to handle high request volumes, with Twitch's services processing over 50,000 \ac{API} requests per second on average. These \ac{API}s allow users to manage their profiles, customize subscriptions and interact with other services on the platform~\parencite{twitch_engineering}.
+    Twitch’s platform also includes a set of web \ac{API}s and data analysis services for various purposes, e.g., from user profile management to stream discovery. These \textbf{Web \ac{API}s} are built using a combination of Ruby on Rails, Go and other open-source frameworks, designed to handle high request volumes, with Twitch's services processing over 50,000 \ac{API} requests per second on average. These \ac{API}s allow users to manage their profiles, customize subscriptions and interact with other services on the platform~\parencite{twitch_engineering}.
 
     Additionally, Twitch also has various microservices for specific use cases, such as \textbf{Search and Discovery Services} to help users find streams and content that match their interests or \textbf{Revenue Systems} that manage all aspects of advertising and subscriptions, ensuring that revenue is accurately tracked and distributed to partners~\parencite{twitch_engineering}. 
     
-    \item \textbf{Web and Client Applications}
+    \break \item \textbf{Web and Client Applications}
     
     Twitch’s \textbf{Desktop Web Application} began as a vanilla Rails application but has developed into an Ember.js application. For mobile users, Twitch offers \textbf{Native Apps} on iOS and Android as well as \textbf{Console Applications} for major gaming systems, including Xbox One, Xbox 360 and PlayStation 4~\parencite{twitch_engineering}.
 
@@ -49,7 +50,7 @@ Twitch's architecture is highly complex and needs to support millions of concurr
 
     Next to its operating infrastructure, Twitch’s data science infrastructure plays an important role in optimizing the platform, improving user experiences and driving business decisions. At the core of this infrastructure is the \textbf{Data Pipeline}, which is responsible for collecting, cleaning and loading over a billion events per day into Twitch’s data warehouse~\parencite{twitch_engineering}. 
 
-    The platform also uses so-called \textbf{Streaming Aggregators}, which summarize key metrics in near real-time. These aggregators provide broadcasters with immediate feedback on their stream performance, allowing them to make adjustments on the fly to improve viewer engagement~\parencite{twitch_engineering}.
+    The platform also uses so-called \textbf{Streaming Aggregators} to summarize key metrics in near real-time and provide broadcasters with direct feedback on their stream performance~\parencite{twitch_engineering}.
 
     \item \textbf{Tools and Operational Infrastructure}
 
@@ -106,7 +107,7 @@ In recent years, YouTube has also expanded its feature offering to include live 
 
 \subsection{Scalability Challenges}\label{subsection:yt-scalability-challenges}
 
-While there is not much information on current scalability issues published by YouTube, there are several records of problems the YouTube team faced up to 2012. These challenges included managing rapid and unpredictable user growth with limited resources, as there was insufficient budget to maintain excess machines to handle such growth. At the same time, the introduction of compute-heavy features, such as social graphs and algorithms for recommender systems, didn't make it easier to find resources for video processing and storage. The team also pushed the limits of the hardware and software of that time, encountering limitations like performance bottlenecks in database structures before database partitioning (more details in \autoref{section:db-sharding}) ~\parencite{youtube_challenges}. As the platform continued to evolve, identifying these bottlenecks became more difficult, as they often were not due to an issue by YouTube itself, but rather by limitations of other libraries and third-party software they used~\parencite{youtube_challenges_2}.
+While there is not much information on current scalability issues published by YouTube, there are several records of problems the YouTube team faced up to 2012. These challenges included managing rapid and unpredictable user growth with limited resources, as there was insufficient budget to maintain excess machines to handle such growth. At the same time, the introduction of compute-heavy features, such as social graphs and algorithms for recommender systems, did not make it easier to find resources for video processing and storage. The team also pushed the limits of the hardware and software of that time, encountering limitations like performance bottlenecks in database structures before database partitioning (more details in \autoref{section:db-sharding}) ~\parencite{youtube_challenges}. As the platform continued to evolve, identifying these bottlenecks became more difficult, as they often were not due to an issue by YouTube itself, but rather by limitations of other libraries and third-party software they used~\parencite{youtube_challenges_2}.
 
 \subsection{Video Acceleration at Scale}
 

@@ -17,8 +17,8 @@ To develop and test the prototype of a distributed architecture for TUM-Live for
     \item 1 selfhosted \ac{VM} with 32 GB RAM, AMD Ryzen 7 PRO 6850U @ 2.70GHz
 \end{itemize}
 
-After the target architecture had been deployed (on a smaller scale) using given resources, a set of performance tests and comparisons was made to find potential limits and breakpoints of each component. 
-Additionally, in parallel to the development of the new architecture, a dedicated documentation has been created to facilitate the setup of GoCast for lecturers or new schools which can be found at \href{https://tumlive-docs.pages.dev/}{tumlive-docs.pages.dev}. The documentation was created using Meta Opensource's \href{https://github.com/facebook/docusaurus}{Docusaurus}\footnote{\url{https://github.com/facebook/docusaurus}}. Static pages were deployed using Cloudflare.
+\noindent After the target architecture had been deployed (on a smaller scale) using given resources, a set of performance tests and comparisons was made to find potential limits and breakpoints of each component. 
+Additionally, in parallel to the development of the new architecture, a dedicated documentation has been created to facilitate the setup of GoCast for lecturers or new schools, which can be found at \href{https://tumlive-docs.pages.dev/}{tumlive-docs.pages.dev}. The documentation was created using Meta Opensource's \href{https://github.com/facebook/docusaurus}{Docusaurus}\footnote{\url{https://github.com/facebook/docusaurus}}. Static pages were deployed using Cloudflare.
 All relevant source code for the thesis, new architecture, other mentioned prototypes and documentation can also be found at \href{https://github.com/carlobortolan/thesis}{github.com/carlobortolan/thesis}.
 
 \section{Proposed System}
@@ -78,7 +78,7 @@ TUMOnline has a strict hierarchical structure for its organizations (one school 
 % On a side node, TUMOnline has 7 organizations, 29 departments and 487 chairs.
 While TUM-Live is mainly used by the TUM, in principle it does not need to differentiate between organizational types that strictly. Organizations are only relevant when it comes to distributing the live streams and recordings of a certain entity to that entity's resources (e.g., Workers and VOD Services). Hence, the introduction of GoCast's organizations which represent an entity responsible for processing data. In practice, this is most of the time a TUMOnline school, however, one can also create a GoCast organization for a department, chair or smaller organization which is subordinated to another organization, depending on the specific situation.
 
-Here's an example to illustrate this in a more detailed way:
+Here is an example to illustrate this in a more detailed way:
 The TUMOnline "School of Management" (SOM) wants to start using TUM-Live. Hence, the SOM's IT team contacts the admins of TUM-Live who then create a new \textit{SOM organization} in TUM-Live and assign the SOM IT team as maintainers.
 The subordinated "Chair of Financial Management and Capital Markets" (FA), however, has its own data center and wants to host its lectures with its own resources. In this case, either one of the SOM maintainers or the \ac{CIT} \ac{ITO} can create a new organization in TUM-Live as a sub-organization of the \textit{SOM organization} and accordingly assign new maintainers from the FA-team. Now, the FA-maintainers have full control over their sub-organization and can connect their own resources from their data center with TUM-Live, independently of the SOM.
 
@@ -235,7 +235,7 @@ This section explains different approaches for the allocation of resources in th
 
 \subsection{Shared Resources}
 
-Before explaining how resources in the GoCast Network are dynamically allocated to different tasks, it is first important to explain in detail how an organization actually "owns" a certain resource such as a Worker. As described in \autoref{section:rbac}, organizations are structured in a hierarchical manner. One organization can have multiple sub-organizations, which can again have multiple sub-sub-organizations and so forth. When an organization has deployed its own resources, by default, accessible only by the organization itself and its sub-organizations. Using the example shown in \autoref{fig:school-hierarchy}, this would mean that if there's a lecture uploaded by \textit{School 1}, only public resources and the organization's own private resources are considered. For a lecture of \textit{School 2a}, all public resources, the organization's own private resources, as well as its parent organization's resources (and recursively so on) are considered. 
+Before explaining how resources in the GoCast Network are dynamically allocated to different tasks, it is first important to explain in detail how an organization actually "owns" a certain resource such as a Worker. As described in \autoref{section:rbac}, organizations are structured in a hierarchical manner. One organization can have multiple sub-organizations, which can again have multiple sub-sub-organizations and so forth. When an organization has deployed its own resources, by default, accessible only by the organization itself and its sub-organizations. Using the example shown in \autoref{fig:school-hierarchy}, this would mean that if there is a lecture uploaded by \textit{School 1}, only public resources and the organization's own private resources are considered. For a lecture of \textit{School 2a}, all public resources, the organization's own private resources, as well as its parent organization's resources (and recursively so on) are considered. 
 
 \begin{figure}[htpb]
     \centering
@@ -318,7 +318,7 @@ The following are four approaches considered for the decision algorithm behind t
 
 \subsubsection{4. Linear Programming Optimization Approach}
 
-By setting up and solving a \ac{LP}, the tasks can be distributed evenly among Workers in such a way that the maximum load on any single worker is minimized and bottlenecks are reduced.
+By solving a \ac{LP}, the tasks can be distributed evenly among Workers, minimizing the maximum load on any single worker and reducing bottlenecks.
 
 \begin{enumerate}
     \item \textbf{Variables and Parameters}
