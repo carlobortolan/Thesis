@@ -1,8 +1,11 @@
 # Thesis
 
-This repository contains all the code related to my Bachelor's Thesis, _"Scalability and Performance Optimization of Video Streaming Infrastructure"_.
+This repository contains all the code related to my Bachelor's Thesis, _"Scalability and Performance Optimization in Video Streaming Infrastructure"_.
 
-## Structure/Content
+> [!Note]
+> **You can find the documentation at [tumlive-docs.pages.dev](https://tumlive-docs.pages.dev) and read the final thesis [here](https://github.com/carlobortolan/Thesis/blob/master/build/main.pdf).**
+
+## Structure/Content of Repository
 
 - [`master`](https://github.com/carlobortolan/Thesis/tree/master): Latex code for the final written thesis.
 - [`analytics`](https://github.com/carlobortolan/Thesis/tree/analytics): Python code used for generating various plots and statistical calculations.
@@ -10,8 +13,8 @@ This repository contains all the code related to my Bachelor's Thesis, _"Scalabi
 - [`enh/scalable-infrastructure`](https://github.com/carlobortolan/Thesis/tree/enh/scalable-infrastructure): A downstream copy of the newly developed [distributed GoCast system](https://github.com/TUM-Dev/gocast/tree/enh/scalable-infrastructure).
 - [`enh/docs`](https://github.com/carlobortolan/Thesis/tree/enh/docs): A downstream copy of the new [GoCast documentation](https://github.com/TUM-Dev/gocast/tree/enh/docs).
 
-> [!Note]
-> The downstream copies of the various GoCast branches will not be updated after the thesis is completed. They serve as a persistent backup of the code used at the time of the thesis, in case the upstream branches are merged or deleted.
+> [!Important]
+> The downstream copies of the various GoCast branches will not be updated after completing the thesis. They serve as a persistent backup of the code used during the thesis if the upstream branches are merged or deleted.
  
 ## License
 
