@@ -123,9 +123,9 @@ When a maintainer starts a new Worker, he can include this token in the containe
 Now, whenever a new lecture is being received or uploaded, the main GoCast \ac{API} selects an available Worker for this organization and addresses it, given the hostname and IP address that the Worker has registered when first connecting to GoCast. For more details on how the distribution of tasks works, see \autoref{section:shared-resources}.
 
 When the Worker receives such a request, it initiates the video transcoding process using \href{https://ffmpeg.org/}{FFmpeg}. The transcoding is performed based on the specific stream version\footnotemark[6]. 
-The process is monitored in real-time, with progress being reported back to the GoCast system, to ensure that any failed actions are retried with backoff strategies and that the final transcoded video meets the expected duration and quality standards.
+The process is monitored in real-time, with progress being reported back to the GoCast system to ensure that any failed actions are retried with back-off strategies and that the final transcoded video meets the expected duration and quality standards.
 
-\footnotetext[6]{\texttt{CAM} streams use a higher compression level (CRF 26) and lower priority (niceness 10), while \texttt{PRES} streams use lower compression (CRF 20) and higher priority (niceness 9), with specific tuning in FFmpeg for still images in presentations. \texttt{COMB} streams, are assigned moderate compression (CRF 24) and the highest priority (niceness 8).}
+\footnotetext[6]{\texttt{CAM} streams use a higher compression level (CRF 26) and lower priority (niceness 10), while \texttt{PRES} streams use lower compression (CRF 20) and higher priority (niceness 9), with specific tuning in FFmpeg for still images in presentations. \texttt{COMB} streams are assigned moderate compression (CRF 24) and the highest priority (niceness 8).}
 
 \subsection{VOD Service and Edge Server}
 
@@ -150,7 +150,7 @@ When network traffic to an Edge node exceeds the available bandwidth, the archit
 
 \subsection{RTMP-Proxy}
 
-\subsubsection{Limitaitons of GoCast's Selfstreaming}
+\subsubsection{Limitaitons of GoCast's Self Streaming}
 
 GoCast supports not just recordings from the lecture hall or manual uploads but also so-called self-streams. The idea behind self-streams is that any lecturer can go live at any given time and stream from his own device without having to be in the lecture hall. In past, to do this, a lecturer had to go open TUM-Live, go to one of his courses' page, select a lecture and copy a link (such as: \texttt{rtmp://worker.example.com/cs-123? secret=5caa9d6447564cb5822995888e224f9a}) together with a secret stream key into a streaming software like OBS Studio. With the introduction of the organization system, there are several reasons why this cannot work:
 
@@ -239,7 +239,7 @@ Before explaining how resources in the GoCast Network are dynamically allocated 
 
 \begin{figure}[htpb]
     \centering
-    \includegraphics[width=250pt]{images/SchoolHierarchy.png}
+    \includegraphics[width=350pt]{images/OrganizationHierarchy.png}
     \caption[Example Organization Hierarchy]{Example Organization Hierarchy}\label{fig:school-hierarchy}
 \end{figure}
 

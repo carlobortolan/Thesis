@@ -119,7 +119,7 @@ Database sharding, also known as horizontal partitioning, involves dividing a la
 A sharded database architecture divides data among multiple data nodes based on a partitioning scheme. Some of the most common partitioning strategies include range-based sharding, where data is divided based on the value range of a key and hash-based sharding, where a hash function is applied to a key to determine the shard placement~\parencite{db_sharding}. This allows the distribution of the data in a more balanced way and can significantly improve read and write operations, as each server now only needs to manage a reduced amount of data.
 
 \subsection{Advantages of Sharding}
-One of the main advantages is scalability, as with increasing data, new shards can be added without requiring significant changes to the application or database architecture. This would allow video streaming platforms to handle increasing loads efficiently, whether it be due to more users, more content, or both~\parencite{db_sharding}.
+One of the main advantages is scalability, as with increasing data, new shards can be added without requiring major changes to the application or database architecture. This would allow video streaming platforms to handle increasing loads efficiently, whether it be due to more users, more content, or both~\parencite{db_sharding}.
 
 Another advantage of sharding is fault tolerance. If one shard becomes unavailable or has a data loss due to any kind of hardware or network failures, the replicated data on another available node can take over, ensuring uptime of service, as the data is typically replicated across multiple nodes~\parencite{db_sharding}.
 

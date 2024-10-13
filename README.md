@@ -1,6 +1,6 @@
 # Thesis
 
-This repository contains all the code related to my Bachelor's Thesis, _"Scalability and Performance Optimization in Video Streaming Infrastructure"_.
+This repository contains all the code related to my bachelor's thesis, _"Scalability and Performance Optimization in Video Streaming Infrastructure"_.
 
 > [!Note]
 > **You can find the documentation at [tumlive-docs.pages.dev](https://tumlive-docs.pages.dev) and read the final thesis [here](https://github.com/carlobortolan/Thesis/blob/master/build/main.pdf).**
