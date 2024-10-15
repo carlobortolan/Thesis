@@ -10,8 +10,8 @@ This chapter analyses the performance of the Workers, based on collected TUM-Liv
 
 The GoCast system uses a rather complex stack of monitoring, logging and analytics tools to collect metrics. The main technologies include \href{https://github.com/grafana/grafana}{Grafana}, \href{https://github.com/prometheus/prometheus}{Prometheus}, \href{https://github.com/influxdata/telegraf}{Telegraf} and \href{https://github.com/influxdata/influxdb}{InfluxDB}, which are deployed in a containerized environment using Docker and managed by \href{https://github.com/traefik/traefik}{Traefik} as a reverse proxy. The collected data is then organized into Grafana dashboards. The metrics collection and logging system for TUM-Live is based on the following main components:
 \begin{itemize}
-    \item \textbf{\href{https://github.com/grafana/grafana}{Grafana}}\footnote{\url{https://github.com/grafana/grafana}}: This is used as the main dashboard for visualizing metrics and performance of connected services in real-time.
-    \item \textbf{\href{https://github.com/prometheus/prometheus}{Prometheus}}\footnote{\url{https://github.com/prometheus/prometheus}}: As a monitoring and alerting toolkit, Prometheus is responsible for scraping metrics from the various services within the system.
+    \item \textbf{\href{https://github.com/grafana/grafana}{Grafana}}\footnote{\url{https://github.com/grafana/grafana}}: The main dashboard for visualizing, querying and exporting metrics of connected services in real-time.
+    \item \textbf{\href{https://github.com/prometheus/prometheus}{Prometheus}}\footnote{\url{https://github.com/prometheus/prometheus}}: Monitoring and alerting service responsible for scraping metrics from various services within different subsystems.
     \item \textbf{\href{https://github.com/influxdata/telegraf}{Telegraf}}\footnote{\url{https://github.com/influxdata/telegraf}}: Collects metrics and logs from Docker containers, the host system and various applications. It works together with InfluxDB to store time-series data.
     \item \textbf{\href{https://github.com/influxdata/influxdb}{InfluxDB}}\footnote{\url{https://github.com/influxdata/influxdb}}: A time-series database, InfluxDB is utilized for storing logs and metrics collected from Telegraf, which are then visualized through Grafana.
     \item \textbf{\href{https://github.com/grafana/loki}{Loki}} and \textbf{\href{https://grafana.com/docs/loki/latest/send-data/promtail/}{Promtail}}\footnote{\url{https://github.com/grafana/loki}}: These tools are used for centralized logging, allowing for real-time querying and log analysis through Grafana's Loki integration.
@@ -20,11 +20,11 @@ The GoCast system uses a rather complex stack of monitoring, logging and analyti
 
 \section{Metrics of the GoCast API}
 
-The main data sources for the GoCast \ac{API} are Loki and Traefik, as well as internal server logs. This section will give some insights on common errors and patterns found in the main \ac{API} and (given the limited amount of logging data) focus on two main aspects: The number of errors and the observed error types. The Python scripts for the plots for this and the following sections be found at \href{https://github.com/carlobortolan/thesis/tree/analytics}{github.com/carlobortolan/thesis/analytics}.
+The main data sources for the GoCast \ac{API} are Loki and Traefik, as well as internal server logs. This section will give some insights on common errors and patterns found in the main \ac{API} and (given the limited amount of logging data) focus on two main aspects: The number of errors and the observed error types. The Python scripts for the plots can be found in the \href{https://github.com/carlobortolan/thesis/tree/analytics}{analytics branch of github.com/carlobortolan/thesis}.
 
 \subsection{Error Volume Analysis}
 
-Plotting the logged errors of the \ac{API} over time (see \autoref{fig:api-cum-errors-over-time}) shows an increase in the sum of total \ac{API} errors with a constant, positive slope. This indicates that errors were logged at a relatively similar rate throughout the observed period. The fact that there are no obvious sudden spikes or drops in this data suggests a continuous, recurring issue rather than isolated incidents. Since the slope did not flatten over time, it shows that the error volume did not escalate or improve significantly over time, implying that either no major fixes were implemented to resolve the underlying causes during this time frame or new bugs were introduced with prior fixes.
+Plotting the logged errors of the \ac{API} over time (see \autoref{fig:api-cum-errors-over-time}) shows an increase in the sum of total \ac{API} errors with a constant, positive slope. This indicates that errors were logged relatively similarly throughout the observed period. As there are no obvious spikes or sudden drops in this data, this suggests a recurring issue rather than isolated incidents. Since the slope did not flatten over time, it shows that the error volume did not escalate or improve significantly over time, implying that either no major fixes were implemented to resolve the underlying causes during this time frame or new bugs were introduced with prior fixes.
 
 \begin{figure}[htpb]
     \centering
@@ -86,7 +86,7 @@ Again, using data collected from various logging services and exported via GoCas
 
 \subsection{Errors over Time}
 
-Similarly to the main \ac{API}, the Worker logs too show a constant number of errors over time (see \autoref{fig:worker-cum-errors-over-time}), indicating that there are either bugs or network issues that continue to occur without being solved. With an average of approximately 30 Worker-related errors per day and days with as many as 75 logged errors (see \autoref{fig:worker-upscaled-error-logs}, it shows that the Worker system can become a bottleneck in the future. Especially considering that - in contrast to the main \ac{API} - there is not just one Worker deployed, but rather a few dozen, meaning that the number of errors will increase proportionally to the number of Workers deployed. 
+Similarly to the main \ac{API}, the Worker logs too show a constant number of errors over time (see \autoref{fig:worker-cum-errors-over-time}), indicating that there are either bugs or network issues that continue to occur without being solved. With an average of approximately 30 Worker-related errors per day and days with as many as 75 logged errors (see \autoref{fig:worker-upscaled-error-logs}), it shows that the Worker system can become a bottleneck in the future. Especially considering that - in contrast to the main \ac{API} - there is not just one Worker deployed, but rather a few dozen, meaning that the number of errors will increase proportionally to the number of Workers deployed. 
 
 \begin{figure}[htpb]
     \centering
@@ -265,10 +265,10 @@ Max & 150 & 150 \\ \hline
 
 \subsection{Results}
 
-As expected, \ac{gRPC} is significantly faster due to its use of \ac{Protobuf} and HTTP/2, which reduces overhead compared to HTTP/1.1. To evaluate whether \ac{gRPC} justifies the effort of switching the \ac{API} Design, there are three main considerations:
+As expected, \ac{gRPC} is significantly faster due to its use of \ac{Protobuf} and HTTP/2, which reduces overhead compared to HTTP/1.1. To evaluate whether \ac{gRPC} justifies the effort of changing the \ac{API} Design, there are three main considerations:
 
 \begin{enumerate}
-    \item \textbf{Performance Benefits}: \ac{gRPC} offers approximately a 3-times significant reduction in latency and an 8-times increase in throughput. It can also be seen that the standard deviation of the response time with \ac{gRPC} requests (36.13 ms) is nearly half that of HTTP requests (60.38 ms) which could lead to an overall more stable \ac{API} performance.  When considering outliers, the \ac{gRPC} \ac{API} again outperforms the \ac{REST} \ac{API}, having a maximum latency of 2,090 ms for slow requests compared to 4,562 ms for the \ac{REST} \ac{API}.
+    \item \textbf{Performance Advantage}: \ac{gRPC} offers a 3-times reduction in latency and an 8-times increase in throughput. It can also be seen that the standard deviation of the response time with \ac{gRPC} requests (36.13 ms) is nearly half that of HTTP requests (60.38 ms) which could lead to an overall more stable \ac{API} performance.  When considering outliers, the \ac{gRPC} \ac{API} again outperforms the \ac{REST} \ac{API}, having a maximum latency of 2,090 ms for slow requests compared to 4,562 ms for the \ac{REST} \ac{API}.
 
     \item \textbf{Browser Compatibility}: While the lack of native browser support for \ac{gRPC} might make \ac{REST} a better fit, the current \ac{gRPC} prototype exposes an HTTP Gateway that can be accessed just like a \ac{REST} \ac{API} by browser-based clients. Also, the \ac{gRPC} prototype only contained "normal" endpoints. Still, considering the many real-time use cases that come with streaming (e.g., the live chat), \ac{gRPC}’s bidirectional streaming could be a big advantage over \ac{REST}.
 
@@ -313,7 +313,7 @@ In the \texttt{liveStreams} method, for each live stream retrieved by the \textt
     \item For each stream, an additional query fetches its associated lecture hall.
 \end{enumerate}
 
-\noindent This leads to N additional queries for the courses and lecture halls for each live stream, resulting in a total of 2N queries plus one initial query for fetching the streams. As we know from \autoref{subsection:user-stats-tumlive}, TUM-Live can have up to 100 active streams with more than 1,000 viewers a day, resulting in a significant number of unnecessary queries.
+\noindent This leads to N additional queries for the courses and lecture halls for each live stream, resulting in a total of 2N queries plus one initial query for fetching the streams. As we know from \autoref{subsection:user-stats-tumlive}, TUM-Live can have up to 100 active streams with more than 1,000 viewers a day, resulting in a large number of unnecessary queries.
 
 \subsubsection{Possible Solutions:}
 
@@ -368,7 +368,7 @@ While the \ac{gRPC} prototype showed promising results, when it comes to compari
 
 \begin{itemize}
     \item \textbf{Resource Usage (CPU, Memory, Network)}
-    It might be interesting to compare how efficiently each \ac{API} handles resources under load. \ac{gRPC}, with its smaller binary payloads, may consume less bandwidth but may use more CPU. 
+    \ac{gRPC}, with its smaller binary payloads, may consume less bandwidth but may use more CPU. 
     Also, for potential bandwidth issues, network traffic could be analyzed to understand the differences in payload size and bandwidth usage.
     
     \item \textbf{Error Rates and Reliability}

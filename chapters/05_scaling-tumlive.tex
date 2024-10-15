@@ -57,7 +57,7 @@ Each organization can decide how many resources it wants to allocate to each ser
     \item Optionally, an organization can add additional \ac{VM}s for monitoring (\href{https://github.com/grafana/grafana}{Grafana}\footnote{\url{https://github.com/grafana/grafana}}, \href{https://github.com/prometheus/prometheus}{Prometheus}\footnote{\url{https://github.com/prometheus/prometheus}}, etc.) or for deploying services such as the Voice Service for subtitling live streams and \ac{VOD}s using the \href{https://github.com/openai/whisper}{Whisper LLM}\footnote{\url{https://github.com/openai/whisper}}.
 \end{itemize}
 
-\footnotetext[5]{In comparison to a \textit{System Architecture Model} (e.g., \autoref{fig:twitch-architecture} or \autoref{fig:system-architecture}), a \textit{Deployment Diagram} shows a concrete instance of an abstract system architecture.}
+\footnotetext[5]{In comparison to a \textit{System Architecture Model} (e.g., \autoref{fig:twitch-architecture}, \autoref{fig:youtube-system-design} or \autoref{fig:old-system-architecture}), a \textit{Deployment Diagram} shows a concrete instance of an abstract system architecture.}
 
 \section{Delegated Administration of Resources}\label{section:rbac}
 
@@ -209,11 +209,10 @@ Now, whenever a stream request arrives at the proxy server, Nginx accepts the re
 
 \subsubsection{Implementation Details: FFmpeg vs. OBS Compatibility}
 
-During the testing phase, it was observed that at times streaming via FFmpeg worked perfectly fine, while attempts using OBS failed:
+During the testing phase, it was observed that at times streaming via FFmpeg worked perfectly fine, while some attempts using OBS failed:
 \begin{itemize}
-    \item \textbf{Encoding Mismatch}: FFmpeg explicitly specifies H.264 for video and AAC for audio. OBS, however, may set different default codecs. The target \ac{RTMP} server of the Worker required H.264 video and anything else would cause a rejection.
-    \item \textbf{Keyframe Interval}: Workers generally expect a keyframe interval of around 2 seconds. OBS settings needed to be adjusted to enforce this interval.
-    \item \textbf{Bitrate Mismatch}: High bitrate settings in OBS were causing overloads, which led to connection issues with the target \ac{RTMP} server. Lowering the bitrate resolved the issue.
+    \item \textbf{Encoding Mismatch}: FFmpeg explicitly specifies H.264 for video and AAC for audio. OBS, however, may set different default codecs. The target \ac{RTMP} server of the Worker required H.264 video and anything else would cause an error.
+    \item \textbf{Bitrate Mismatch}: High bitrate settings in OBS were causing overloads, which led to connection issues with the target \ac{RTMP} server. Lowering the bitrate to 2500-4000 Kbps resolved the issue.
     \item \textbf{URL Composition}: The self-streaming URL used to call the proxy is structured like: \texttt{<protocol>://<host>:<port>/live/<stream\_key>}. OBS, however, requires the URL and stream key to be set separately (see \autoref{fig:obs-rtmp}).
 \end{itemize}
 
@@ -233,9 +232,8 @@ While the RTMP-Proxy is far from perfect, it is meant as a prototype of a possib
 
 This section explains different approaches for the allocation of resources in the GoCast network. The main focus is on the task distribution to the available Workers when receiving new video uploads or stream requests.
 
-\subsection{Shared Resources}
-
-Before explaining how resources in the GoCast Network are dynamically allocated to different tasks, it is first important to explain in detail how an organization actually "owns" a certain resource such as a Worker. As described in \autoref{section:rbac}, organizations are structured in a hierarchical manner. One organization can have multiple sub-organizations, which can again have multiple sub-sub-organizations and so forth. When an organization has deployed its own resources, by default, accessible only by the organization itself and its sub-organizations. Using the example shown in \autoref{fig:school-hierarchy}, this would mean that if there is a lecture uploaded by \textit{School 1}, only public resources and the organization's own private resources are considered. For a lecture of \textit{School 2a}, all public resources, the organization's own private resources, as well as its parent organization's resources (and recursively so on) are considered. 
+\subsection{Organization Hierarchy}
+Before explaining how resources in the GoCast Network are dynamically allocated to different tasks, it is first important to explain in detail how an organization actually "owns" a certain resource such as a Worker. As described in \autoref{section:rbac}, organizations are structured in a hierarchical manner. One organization can have multiple sub-organizations, which can again have multiple sub-sub-organizations and so forth. When an organization has deployed its own resources, by default, they are accessible only by the organization itself and its sub-organizations. Using the example shown in \autoref{fig:school-hierarchy}, this would mean that if there is a lecture uploaded by \textit{Organization 1}, only public resources and the organization's own private resources are considered. For a lecture of \textit{Organization 2a}, all public resources, the organization's own private resources, as well as its parent organization's resources (and recursively so on) are considered. 
 
 \begin{figure}[htpb]
     \centering
@@ -243,7 +241,7 @@ Before explaining how resources in the GoCast Network are dynamically allocated 
     \caption[Example Organization Hierarchy]{Example Organization Hierarchy}\label{fig:school-hierarchy}
 \end{figure}
 
-Additionally, for certain resources, for example, Workers, one can decide to set the \texttt{Shared} flag. When a resource has that flag enabled, it means that even though it is part of an organization (and hence by default only available for lectures of that organization or sub-organizations in that organization's hierarchy), it now becomes available to all organizations and shares its compute power with the entire network of organizations. To use the previous example, assuming that \textit{School 2a} has allowed to share its resources, when \textit{School 1} uploads a video or starts a stream, in addition to its own private resources and the public resources, it also considers the shared resource of \textit{School 2a}.
+Additionally, for certain resources, for example, Workers, one can decide to set the \texttt{Shared} flag. When a resource has that flag enabled, it means that even though it is part of an organization (and hence by default only available for lectures of that organization or sub-organizations in that organization's hierarchy), it now becomes available to all organizations and shares its compute power with the entire network of organizations. To use the previous example, assuming that \textit{Organization 2a} has allowed to share its resources, when \textit{Organization 1} uploads a video or starts a stream, in addition to its own private resources and the public resources, it also considers the shared resource of \textit{Organization 2a}.
 
 \subsection{Four Approaches for Task Distribution}
 
@@ -270,7 +268,7 @@ The following are four approaches considered for the decision algorithm behind t
     
     % \item \textbf{Recursive Organization-Based Allocation:}  
 \subsubsection{2. Recursive Organization-Based Allocation}
-    When a task is started, the system recursively checks for available resources, starting from the organization's own resources and moving up the hierarchy to include parent organizations and shared resources as described in the previous subsection. This guarantees that each task is allocated to the most appropriate resource, improving resource utilization across the network by allowing sub-organizations to benefit from the resources of their parent organizations while respecting the resource ownership of each organization. One could implement different optimizations, such as prioritizing one's own resources before shared resources or limiting how many levels the query should follow the parent-child relationship upwards. Also, one organization might not want to use resources shared by other organizations and, therefore, include only resources from its own organization's hierarchy. The code snippet below is an example of how a recursive query might look to find all available Workers in an organization's hierarchy, including shared Workers.   
+    When a task is started, the system recursively checks for available resources, starting from the organization's own private resources and moving up the hierarchy to include parent organizations and shared resources as described in the previous subsection. With this approach, each task is allocated to the most appropriate resource, improving resource utilization across the GoCast system by allowing sub-organizations to benefit from the resources of their parent organizations while respecting the resource ownership of each organization. One could implement different optimizations, such as prioritizing one's own resources before shared resources or limiting how many levels the query should follow the parent-child relationship upwards. Also, one organization might not want to use resources shared by other organizations and, therefore, include only resources from its own organization's hierarchy. The code snippet below is an example of how a recursive query might look to find all available Workers in an organization's hierarchy, including shared Workers.   
 
     \begin{figure}[htpb]
       \begin{tabular}{c}
